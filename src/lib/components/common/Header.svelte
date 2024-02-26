@@ -179,7 +179,7 @@
       <h3>Links</h3>
       <FlexContainer column rounded border overflowhidden zeroFlexShrink gap="2px">
         <Button on:click={closeOnExit(gotoExt(`${LANDING_CLIENT_URL}`))} flexgrow ascolumn align_items="flex-start">Home</Button>
-        <Button on:click={closeOnExit(gotoExt(`${LANDING_CLIENT_URL}/mail-relay`))} flexgrow ascolumn align_items="flex-start">Docs</Button>
+        <Button on:click={closeOnExit(gotoExt(`${LANDING_CLIENT_URL}/support`))} flexgrow ascolumn align_items="flex-start">Support</Button>
         <Button on:click={closeOnExit(gotoExt(`${LANDING_CLIENT_URL}/blog`))} flexgrow ascolumn align_items="flex-start">Blog</Button>
         <Button on:click={closeOnExit(gotoExt(`${LANDING_CLIENT_URL}/privacy`))} flexgrow ascolumn align_items="flex-start">Privacy Policy</Button>
       </FlexContainer>
@@ -217,7 +217,7 @@
         {#if isLoginScreen}
           <FlexContainer width="100%" align_items="center" justify_content="flex-end" nomobile gap="1rem">
             <a href={`${LANDING_CLIENT_URL}`}><span>Home</span></a>
-            <a href={`${LANDING_CLIENT_URL}/mail-relay`}><span>Docs</span></a>
+            <a href={`${LANDING_CLIENT_URL}/support`}><span>Support</span></a>
             <a href={`${LANDING_CLIENT_URL}/blog`}><span>Blog</span></a>
             <a href={`${LANDING_CLIENT_URL}/privacy`}><span>Privacy</span></a>
             {#if canInstallApp && deferredInstallPrompt}
@@ -245,9 +245,7 @@
             </FlexContainer>
           {/if}
         {:else}
-          <div class="menu-group no-mobile">
-            <!-- <a href={`${LANDING_CLIENT_URL}/mail-relay`}><span>Docs</span></a> -->
-          </div>
+          <div class="menu-group no-mobile" />
         {/if}
         <div class="menu-group">
           {#if $session?.email}
