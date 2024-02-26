@@ -19,7 +19,7 @@ jobs:
       - name: install dependencies
         run: 'npm ci'
         env:
-          GITHUB_PERSONAL_ACCESS_TOKEN: ${{secrets._GITHUB_PERSONAL_ACCESS_TOKEN}}
+          GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
         run: 'npm run build -- --mode production'
