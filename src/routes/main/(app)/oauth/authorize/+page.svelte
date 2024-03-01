@@ -13,6 +13,7 @@
 
   // support hash params to prevent unwanted leaks to server
   const searchParams = $page.url.hash?.length ? new URLSearchParams($page.url?.hash.substring(1)) : $page.url.searchParams;
+  let responseType = searchParams.get('response_type');
   let clientId = searchParams.get('client_id');
   let scope = searchParams.get('scope');
   let redirect_uri = searchParams.get('redirect_uri');
@@ -62,7 +63,7 @@
           method: 'POST',
           path: '/oauth/authorize',
           data: {
-            response_type: 'code',
+            response_type: responseType || 'code',
             client_id: clientId,
             scope,
             ...(redirect_uri && { redirect_uri }),
