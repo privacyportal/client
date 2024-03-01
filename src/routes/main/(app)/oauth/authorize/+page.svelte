@@ -19,6 +19,7 @@
   let redirect_uri = searchParams.get('redirect_uri');
   let state = searchParams.get('state');
   let prompt = searchParams.get('prompt');
+  let nonce = searchParams.get('nonce');
 
   let client_info;
   let authorized_data;
@@ -75,7 +76,8 @@
                 }
               }),
             ...(prompt && { prompt }),
-            ...(state && { state })
+            ...(state && { state }),
+            ...(nonce && { nonce })
           }
         },
         {
