@@ -27,6 +27,8 @@
   let errorMessage;
 
   $: consent_scope = new_scope || scope;
+  $: hasBasicPermissions = consent_scope.includes('name') || consent_scope.includes('email') || authorized_data?.name || authorized_data?.email;
+  $: hasExtraPermissions = consent_scope.includes('w:api_keys');
 
   let name = 'Anonymous';
   let submitting = false;
@@ -139,29 +141,48 @@
 
       <Form on:submit={() => authorizeClient(true)}>
         <FlexContainer column align_items="center" gap="3rem">
-          {#if consent_scope.includes('name') || consent_scope.includes('email')}
-            <GridContainer width="min(100%, 350px)" bgColor="var(--new-layer-color)" align_items="center" template_columns="auto 1fr" padding="1rem" gap="1rem" rounded>
-              {#if consent_scope.includes('name')}
-                <h5 class="no-margin">Name</h5>
-                <Input type="text" name="name" placeholder="name" autocomplete="off" minlength="1" maxlength="100" required focus bind:value={name} disabled={submitting} />
-              {:else if authorized_data?.name}
-                <h5 class="no-margin disabled">Name</h5>
-                <span class="disabled">{authorized_data.name}</span>
+          {#if hasBasicPermissions || hasExtraPermissions}
+            <FlexContainer column width="min(100%, 350px)" bgColor="var(--new-layer-color)" padding="1rem" gap="1rem" rounded>
+              {#if hasBasicPermissions}
+                <GridContainer align_items="center" template_columns="auto 1fr" gap="1rem">
+                  {#if consent_scope.includes('name')}
+                    <h5 class="no-margin">Name</h5>
+                    <Input type="text" name="name" placeholder="name" autocomplete="off" minlength="1" maxlength="100" required focus bind:value={name} disabled={submitting} />
+                  {:else if authorized_data?.name}
+                    <h5 class="no-margin disabled">Name</h5>
+                    <span class="disabled">{authorized_data.name}</span>
+                  {/if}
+                  {#if consent_scope.includes('email')}
+                    <h5 class="no-margin">Email</h5>
+                    <FlexContainer column>
+                      <span class="sm">New Privacy Address</span>
+                      <span class="xs">Forwards to: {$session.email}</span>
+                    </FlexContainer>
+                  {:else if authorized_data?.email}
+                    <h5 class="no-margin disabled">Email</h5>
+                    <FlexContainer column>
+                      <span class="sm disabled">{authorized_data.email}</span>
+                      <span class="xs disabled">Forwards to: {$session.email}</span>
+                    </FlexContainer>
+                  {/if}
+                </GridContainer>
+
+                {#if hasExtraPermissions}
+                  <hr class="divider no-margin" />
+                {/if}
               {/if}
-              {#if consent_scope.includes('email')}
-                <h5 class="no-margin">Email</h5>
-                <FlexContainer column>
-                  <span class="sm">New Privacy Address</span>
-                  <span class="xs">Forwards to: {$session.email}</span>
-                </FlexContainer>
-              {:else if authorized_data?.email}
-                <h5 class="no-margin disabled">Email</h5>
-                <FlexContainer column>
-                  <span class="sm disabled">{authorized_data.email}</span>
-                  <span class="xs disabled">Forwards to: {$session.email}</span>
+
+              {#if hasExtraPermissions}
+                <FlexContainer column gap="0.5rem">
+                  <h5 class="no-margin text-centered">Grant Permissions</h5>
+                  <ul class="sm-v-margin">
+                    {#if consent_scope.includes('w:api_keys')}
+                      <li><input type="checkbox" checked disabled /> <span class="sm">permission to create API Keys.</span></li>
+                    {/if}
+                  </ul>
                 </FlexContainer>
               {/if}
-            </GridContainer>
+            </FlexContainer>
           {/if}
 
           <GridContainer width="min(100%, 350px)" template_columns="1fr 1fr" gap="0.5rem">
@@ -195,5 +216,21 @@
   h5.disabled,
   span.disabled {
     filter: brightness(90%);
+  }
+
+  .text-centered {
+    text-align: center;
+  }
+
+  li {
+    list-style: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  li:not(:first-child) {
+    margin-top: 0.5rem;
   }
 </style>
