@@ -8,12 +8,13 @@
   import DeleteIcon from '$lib/components/materialIcons/DeleteIcon.svelte';
   import { displayError } from '$lib/modules/errors';
   import { activateAuthenticator, deactivateAuthenticator, deleteApiKey, deleteAuthenticator, getApiKeys, getAuthenticators } from '$lib/modules/requests';
-  import { formatDate } from '$lib/modules/utils';
+  import { formatDate, formatDuration } from '$lib/modules/utils';
   import { isEnhancedProtection } from '$lib/stores/account';
   import { onMount } from 'svelte';
   import AccountRecovery from './AccountRecovery.svelte';
   import NewApiKey from './NewApiKey.svelte';
   import NewAuthenticator from './NewAuthenticator.svelte';
+  import { minuteTimer } from '$lib/stores/timers';
 
   const MAX_API_KEYS = 5;
   const MAX_AUTHENTICATORS = 10;
@@ -169,16 +170,22 @@
         {#if loadingApiKeys}
           <p>loading...</p>
         {:else if apiKeys?.length}
-          <GridContainer align_items="center" template_columns="2fr 1fr 20px" gap="0.5rem 1rem" margin="0.5rem 0 0 0">
+          <GridContainer align_items="center" template_columns="auto auto 1fr 1fr 30px" mobile_template_columns="minmax(auto, 1fr) auto 1fr 30px" gap="0.5rem 1rem" margin="0.5rem 0 0 0">
+            <h5 class="no-margin oneline">Name</h5>
             <h5 class="no-margin oneline">Key ID</h5>
-            <h5 class="no-margin oneline">Created</h5>
+            <h5 class="no-margin oneline no-mobile">Created</h5>
+            <h5 class="no-margin oneline">Expires In</h5>
             <br />
             {#each apiKeys as apiKey}
-              <span class="oneline mono sm">{apiKey.key}</span>
-              <span class="mono sm">{formatDate(apiKey.created_at, { dateOnly: true })}</span>
-              <Button on:click={() => handleDeleteApiKey(apiKey.key)} padding="0px" margin="0px" align_items="center" blendin rounded disabled={loadingApiKeys || deletingApiKey}>
-                <DeleteIcon dimension="20px" disabled={loadingApiKeys || deletingApiKey} />
-              </Button>
+              {#if apiKey.expires_at > $minuteTimer}
+                <span class="oneline mono sm">{apiKey.label}</span>
+                <span class="oneline mono sm">{apiKey.key}</span>
+                <span class="mono sm no-mobile">{formatDate(apiKey.created_at, { dateOnly: true })}</span>
+                <span class="sm oneline">{formatDuration(apiKey.expires_at - $minuteTimer, { daysOnly: true })}</span>
+                <Button on:click={() => handleDeleteApiKey(apiKey.key)} padding="0px 5px" margin="0px" align_items="center" blendin rounded disabled={loadingApiKeys || deletingApiKey}>
+                  <DeleteIcon dimension="20px" disabled={loadingApiKeys || deletingApiKey} />
+                </Button>
+              {/if}
             {/each}
           </GridContainer>
         {/if}

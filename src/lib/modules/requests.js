@@ -516,10 +516,13 @@ export async function getApiKeys() {
   });
 }
 
-export async function createNewApiKey() {
+export async function createNewApiKey({ label }) {
   return await sendRequest({
     method: 'POST',
-    path: `/api-keys/new`
+    path: `/api-keys/new`,
+    data: {
+      label
+    }
   });
 }
 
