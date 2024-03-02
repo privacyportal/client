@@ -129,7 +129,7 @@
     <FlexContainer column padding="1.5rem 0px 1.5rem 1.5rem" gap="1rem" justify_content="flex-start" nomobile>
       <h3 class="no-margin oneline">OAuth Application</h3>
 
-      <FlexContainer column rounded border gap="2px">
+      <FlexContainer column rounded border nooverflow>
         <Button
           on:click={() => {
             selectedSection = 0;
@@ -217,8 +217,8 @@
             <FlexContainer column gap="0.5rem">
               <h5 class="no-margin">Homepage URL</h5>
               {#if published_at}
-                <GridContainer height="35px" padding="0 0.5rem" align_items="center" bgColor="var(--new-layer-color)" template_columns="1fr auto" rounded>
-                  <span>{_url}</span>
+                <GridContainer height="35px" padding="0 0.5rem" align_items="center" bgColor="var(--new-layer-color)" template_columns="1fr auto" gap="0.3rem" rounded nooverflow>
+                  <span class="oneline">{_url}</span>
                   {#if mainDomain.verified_at}
                     <CheckCircleIcon dimension="20px" />
                   {:else}
