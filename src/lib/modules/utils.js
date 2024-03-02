@@ -13,21 +13,25 @@ export function formatDate(timestamp, options) {
   });
 }
 
-export function formatDuration(duration) {
+export function formatDuration(duration, options) {
+  const { daysOnly } = { ...options };
+
   let result = [];
   const isFuture = duration >= 0;
   duration = Math.abs(duration);
 
-  // calculate years
-  const years = Math.floor(duration / YEAR);
-  duration %= YEAR;
-  if (years) result.push(years > 1 ? `${years} years` : `1 year`);
+  if (!daysOnly) {
+    // calculate years
+    const years = Math.floor(duration / YEAR);
+    duration %= YEAR;
+    if (years) result.push(years > 1 ? `${years} years` : `1 year`);
 
-  if (result.length === 0) {
-    // calculate months
-    const months = Math.floor(duration / MONTH);
-    duration %= MONTH;
-    if (months) result.push(months > 1 ? `${months} months` : `1 month`);
+    if (result.length === 0) {
+      // calculate months
+      const months = Math.floor(duration / MONTH);
+      duration %= MONTH;
+      if (months) result.push(months > 1 ? `${months} months` : `1 month`);
+    }
   }
 
   if (result.length === 0) {
