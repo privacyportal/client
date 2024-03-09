@@ -64,7 +64,7 @@
       <Button on:click={() => copyToClipboard('key', key)} basic padding="0px 0.5rem" rounded>
         <GridContainer margin="0 0 0 0" padding="0.5rem" justify_items="stretch" template_columns="1fr auto" align_items="center" gap="0.7rem" rounded>
           <FlexContainer column align_items="start" nooverflow>
-            <h6 class="no-margin oneline">{key}</h6>
+            <h6 class="no-margin oneline mono">{key}</h6>
             <span class="xs">Key</span>
           </FlexContainer>
           {#if clipboard?.key}
@@ -77,7 +77,7 @@
       <Button on:click={() => copyToClipboard('secret', secret)} basic padding="0px 0.5rem" rounded>
         <GridContainer margin="0 0 0 0" padding="0.5rem" justify_items="stretch" template_columns="1fr auto" align_items="center" gap="0.7rem" rounded>
           <FlexContainer column align_items="start" nooverflow>
-            <h6 class="no-margin oneline">{secret}</h6>
+            <h6 class="no-margin oneline mono">{secret}</h6>
             <span class="xs">Secret</span>
           </FlexContainer>
           {#if clipboard?.secret}

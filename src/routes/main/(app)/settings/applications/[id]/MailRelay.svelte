@@ -126,7 +126,7 @@
                 >
               {/if}
               <Button on:click={() => removeRegisteredDomain(domain.id)} padding="2px 7px" blendin rounded disabled={removingDomain || index < 1}
-                ><DeleteIcon dimension="20px" disabled={removingDomain || index < 1} /></Button
+                ><DeleteIcon dimension="20px" disabled={removingDomain || domains?.length < 2} /></Button
               >
             </FlexContainer>
             <div class="gridline"></div>
