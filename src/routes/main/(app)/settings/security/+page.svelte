@@ -27,6 +27,8 @@
   let apiKeys = [];
   let deletingApiKey;
 
+  $: validApiKeys = (apiKeys || []).filter((apiKey) => apiKey.expires_at > $minuteTimer);
+
   async function fetchAuthenticators() {
     loadingAuthenticators = true;
     try {
@@ -161,37 +163,33 @@
 
   <AccountRecovery {loadingAuthenticators} {authenticators} />
 
-  {#if $isEnhancedProtection}
-    <FlexContainer column padding="1rem" bgColor="var(--new-layer-color)" gap="0.5rem" rounded>
-      <h4 class="no-margin">API Keys</h4>
-      <span class="sm">Create API Keys to automate your flow by direclty using our API or through 3rd party applications.</span>
-      <FlexContainer mainList column gap="0px">
-        <Button on:click={() => (newApiKeyModalOpened = true)} disabled={apiKeys?.length >= MAX_API_KEYS} margin="0.5rem 0" primary rounded>New API Key</Button>
-        {#if loadingApiKeys}
-          <p>loading...</p>
-        {:else if apiKeys?.length}
-          <GridContainer align_items="center" template_columns="auto auto 1fr 1fr 30px" mobile_template_columns="minmax(auto, 1fr) auto 1fr 30px" gap="0.5rem 1rem" margin="0.5rem 0 0 0">
-            <h5 class="no-margin oneline">Name</h5>
-            <h5 class="no-margin oneline">Key ID</h5>
-            <h5 class="no-margin oneline no-mobile">Created</h5>
-            <h5 class="no-margin oneline">Expires In</h5>
-            <br />
-            {#each apiKeys as apiKey}
-              {#if apiKey.expires_at > $minuteTimer}
-                <span class="oneline mono sm">{apiKey.label}</span>
-                <span class="oneline mono sm">{apiKey.key}</span>
-                <span class="mono sm no-mobile">{formatDate(apiKey.created_at, { dateOnly: true })}</span>
-                <span class="sm oneline">{formatDuration(apiKey.expires_at - $minuteTimer, { daysOnly: true })}</span>
-                <Button on:click={() => handleDeleteApiKey(apiKey.key)} padding="0px 5px" margin="0px" align_items="center" blendin rounded disabled={loadingApiKeys || deletingApiKey}>
-                  <DeleteIcon dimension="20px" disabled={loadingApiKeys || deletingApiKey} />
-                </Button>
-              {/if}
-            {/each}
-          </GridContainer>
-        {/if}
-      </FlexContainer>
+  <FlexContainer column padding="1rem" bgColor="var(--new-layer-color)" gap="0.5rem" rounded>
+    <h4 class="no-margin">API Keys</h4>
+    <span class="sm">Create API Keys to automate your flow by direclty using our API or through 3rd party applications.</span>
+    <FlexContainer mainList column gap="0px">
+      <Button on:click={() => (newApiKeyModalOpened = true)} disabled={validApiKeys?.length >= MAX_API_KEYS} margin="0.5rem 0" primary rounded>New API Key</Button>
+      {#if loadingApiKeys}
+        <p>loading...</p>
+      {:else if validApiKeys?.length}
+        <GridContainer align_items="center" template_columns="auto auto 1fr 1fr 30px" mobile_template_columns="minmax(auto, 1fr) auto 1fr 30px" gap="0.5rem 1rem" margin="0.5rem 0 0 0">
+          <h5 class="no-margin oneline">Name</h5>
+          <h5 class="no-margin oneline">Key ID</h5>
+          <h5 class="no-margin oneline no-mobile">Created</h5>
+          <h5 class="no-margin oneline">Expires In</h5>
+          <br />
+          {#each validApiKeys as apiKey}
+            <span class="oneline mono sm">{apiKey.label}</span>
+            <span class="oneline mono sm">{apiKey.key}</span>
+            <span class="mono sm no-mobile">{formatDate(apiKey.created_at, { dateOnly: true })}</span>
+            <span class="sm oneline">{formatDuration(apiKey.expires_at - $minuteTimer, { daysOnly: true })}</span>
+            <Button on:click={() => handleDeleteApiKey(apiKey.key)} padding="0px 5px" margin="0px" align_items="center" blendin rounded disabled={loadingApiKeys || deletingApiKey}>
+              <DeleteIcon dimension="20px" disabled={loadingApiKeys || deletingApiKey} />
+            </Button>
+          {/each}
+        </GridContainer>
+      {/if}
     </FlexContainer>
-  {/if}
+  </FlexContainer>
 </FlexContainer>
 
 <style>
