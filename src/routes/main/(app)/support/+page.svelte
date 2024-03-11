@@ -13,7 +13,7 @@
   import MailIcon from '$lib/components/materialIcons/MailIcon.svelte';
   import { LANDING_CLIENT_URL } from '$lib/modules/constants';
   import { displayError } from '$lib/modules/errors';
-  import saveAs from '$lib/modules/export';
+  import { saveAs } from '$lib/modules/export';
   import { submitSupportRequest } from '$lib/modules/requests';
   import { gotoExt } from '$lib/modules/routingUtils';
   import { showSnackbar } from '$lib/stores/snackbar';

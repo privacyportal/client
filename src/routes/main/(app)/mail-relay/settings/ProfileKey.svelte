@@ -6,7 +6,7 @@
   import CloseIcon from '$lib/components/materialIcons/CloseIcon.svelte';
   import DownloadIcon from '$lib/components/materialIcons/DownloadIcon.svelte';
   import DownloadingIcon from '$lib/components/materialIcons/DownloadingIcon.svelte';
-  import saveAs from '$lib/modules/export';
+  import { saveAs } from '$lib/modules/export';
   import { showSnackbar } from '$lib/stores/snackbar';
   import { minuteTimer } from '$lib/stores/timers';
   import { X509Certificate } from '@privacyportal/client-certs';

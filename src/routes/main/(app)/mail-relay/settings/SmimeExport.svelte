@@ -7,9 +7,10 @@
   import Select from '$lib/components/common/Select.svelte';
   import DownloadIcon from '$lib/components/materialIcons/DownloadIcon.svelte';
   import DownloadingIcon from '$lib/components/materialIcons/DownloadingIcon.svelte';
+  import ShareIcon from '$lib/components/materialIcons/ShareIcon.svelte';
   import VerifiedIcon from '$lib/components/materialIcons/VerifiedIcon.svelte';
   import { ORGANIZATION, PROVIDER_URL } from '$lib/modules/constants';
-  import saveAs from '$lib/modules/export';
+  import { saveAs, createFile } from '$lib/modules/export';
   import { sessionRead } from '$lib/modules/storage';
   import { session } from '$lib/stores/account';
   import { addToCertificateState } from '$lib/stores/profiles';
@@ -28,6 +29,8 @@
   let exporting;
   let downloading;
   let exportedFile;
+
+  $: canShare = !!(exportedFile && navigator.canShare && navigator.canShare({ files: [ exportedFile ] }));
 
   async function exportCertificate(type) {
     const email = $session?.email;
@@ -59,13 +62,13 @@
         });
       });
 
-      exportedFile = {
+      exportedFile = createFile({
         filename: `${email}.pfx`,
         data: pkcs12Data,
         type: 'application/x-pkcs12'
-      };
+      });
 
-      saveAs(exportedFile);
+      saveAs({ file: exportedFile });
 
       showSnackbar({ text: 'Certificate successfully exported.' });
     } catch (err) {
@@ -83,9 +86,22 @@
   function handleDownload() {
     downloading = true;
     try {
-      saveAs(exportedFile);
+      saveAs({ file: exportedFile });
     } finally {
       downloading = false;
+    }
+  }
+
+  async function handleShare() {
+    if (canShare) {
+      downloading = true;
+      try {
+        await navigator.share({
+          files: [ exportedFile ]
+        });
+      } finally {
+        downloading = false;
+      }
     }
   }
 
@@ -102,16 +118,27 @@
 
   {#if exportedFile}
     <span class="sm"> Make sure to backup this profile now for recovery purposes. You would also need it to setup email encryption on other devices you own. </span>
-    <GridContainer bgColor="var(--new-layer-color)" align_items="center" template_columns="20px 1fr 20px" gap="0.5rem" padding="0.5rem" rounded>
-      <VerifiedIcon dimension="20px" />
-      <FlexContainer column>
-        <h6 class="no-margin">S/MIME profile</h6>
-        <span class="xs">{exportedFile.filename}</span>
-      </FlexContainer>
-      <Button margin="0" padding="0.1rem" on:click={handleDownload} disabled={downloading} blendin rounded>
-        <DownloadIcon dimension="20px" />
-      </Button>
-    </GridContainer>
+    <FlexContainer column bgColor="var(--new-layer-color)" padding="0.5rem" gap="0.5rem" rounded>
+      <GridContainer align_items="center" template_columns="20px 1fr" gap="0.5rem" rounded>
+        <VerifiedIcon dimension="20px" />
+        <FlexContainer column>
+          <h6 class="no-margin">S/MIME profile</h6>
+          <span class="xs oneline">{exportedFile.name}</span>
+        </FlexContainer>
+      </GridContainer>
+      <GridContainer template_columns={`repeat(${canShare ? 2 : 1}, 1fr)`} mobile_template_columns="1fr" gap="0.3rem">
+        <Button height="auto" margin="0" padding="0.2rem 0.5rem" gap="0.3rem" on:click={handleDownload} disabled={downloading} blendin border rounded>
+          <DownloadIcon dimension="18px" />
+          <span class="xs"><strong>Download</strong></span>
+        </Button>
+        {#if canShare}
+          <Button height="auto" margin="0" padding="0.2rem 0.5rem" gap="0.3rem" on:click={handleShare} disabled={downloading} blendin border rounded>
+            <ShareIcon dimension="18px" />
+            <span class="xs"><strong>Share</strong></span>
+          </Button>
+        {/if}
+      </GridContainer>
+    </FlexContainer>
   {:else}
     <span class="sm"> Enter a passphrase to encrypt and export your certificate and private key. The exported file needs be installed on your devices to setup email encryption. </span>
 
