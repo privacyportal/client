@@ -298,7 +298,7 @@
                 <Button type="submit" disabled={loading} rounded strong border={$isDarkMode}>Sign Up</Button>
               </FlexContainer>
             </Form>
-            <a on:click={toggleShowSignIn} href>Sign in to existing account</a>
+            <a on:click={toggleShowSignIn} href={$page.url.pathname === '/signup' ? '/' : undefined}>Sign in to existing account</a>
           {/if}
         </FlexContainer>
       {/if}
