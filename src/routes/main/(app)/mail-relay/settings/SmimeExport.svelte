@@ -30,7 +30,7 @@
   let downloading;
   let exportedFile;
 
-  $: canShare = !!(exportedFile && navigator.canShare && navigator.canShare({ files: [ exportedFile ] }));
+  $: canShare = !!(exportedFile && navigator.canShare && navigator.canShare({ files: [exportedFile] }));
 
   async function exportCertificate(type) {
     const email = $session?.email;
@@ -97,7 +97,7 @@
       downloading = true;
       try {
         await navigator.share({
-          files: [ exportedFile ]
+          files: [exportedFile]
         });
       } finally {
         downloading = false;

@@ -1,4 +1,5 @@
 <script>
+  import { isPublicPGPKey } from '$lib/modules/pgpUtils';
   import { showSnackbar } from '$lib/stores/snackbar';
 
   export let textAreaElement = undefined;
@@ -12,6 +13,9 @@
   export let disabled = false;
   export let rows = 5;
   export let cols = 60;
+  export let acceptFileDrop = undefined;
+
+  let dragover = undefined;
 
   // https://developer.mozilla.org/en-US/docs/Web/API/ValidityState
   function handleInvalid(event) {
@@ -23,10 +27,6 @@
     if (validity.patternMismatch) return event.target.setCustomValidity('Invalid input.');
   }
 
-  function isPublicKey(value) {
-    return /^(?:\r?\n)*-{5}BEGIN PGP PUBLIC KEY BLOCK-{5}(?:\r?\n)*(?:[=a-zA-Z0-9+/]+(?:\r?\n)*)+-{5}END PGP PUBLIC KEY BLOCK-{5}(?:\r?\n)*/g.test(value);
-  }
-
   function handleDroppedFile(file) {
     if (file.size > 2000) return showSnackbar({ text: 'Public PGP file expected.' });
     console.log(file);
@@ -36,7 +36,7 @@
       'load',
       () => {
         const publicKey = fileReader.result;
-        if (!isPublicKey(publicKey)) return showSnackbar({ text: 'File should contain a PGP public key.' });
+        if (!isPublicPGPKey(publicKey)) return showSnackbar({ text: 'File should contain a PGP public key.' });
         value = publicKey;
       },
       false
@@ -48,6 +48,11 @@
   }
 
   function dropHandler(e) {
+    if (!acceptFileDrop) return;
+
+    // remove dragover class
+    dragover = undefined;
+
     if (e.dataTransfer.items) {
       if (e.dataTransfer.items.length > 1) return showSnackbar({ text: 'Cannot drop more than one file.' });
 
@@ -72,6 +77,8 @@
 
 <textarea
   on:drop|preventDefault={dropHandler}
+  on:dragover|preventDefault={() => (dragover = acceptFileDrop)}
+  on:dragleave|preventDefault={() => (dragover = undefined)}
   {rows}
   {cols}
   {name}
@@ -84,6 +91,7 @@
   {maxlength}
   {disabled}
   class:flexgrow
+  class:dragover
 />
 
 <style>
@@ -94,6 +102,7 @@
     background-color: var(--base-color);
     border-color: var(--border-color);
     color: var(--text-color);
+    --hover-brightness: var(--base-hover-brightness);
   }
 
   textarea:focus {
@@ -115,5 +124,9 @@
     -webkit-text-fill-color: var(--text-color);
     box-shadow: 0 0 0px 1000px var(--translucent-primary-color) inset;
     -webkit-box-shadow: 0 0 0px 1000px var(--translucent-primary-color) inset;
+  }
+
+  textarea.dragover {
+    filter: brightness(var(--hover-brightness));
   }
 </style>
