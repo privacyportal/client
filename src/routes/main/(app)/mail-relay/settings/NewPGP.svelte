@@ -1,5 +1,6 @@
 <script>
   import Button from '$lib/components/common/Button.svelte';
+  import FilePicker from '$lib/components/common/FilePicker.svelte';
   import FlexContainer from '$lib/components/common/FlexContainer.svelte';
   import Form from '$lib/components/common/Form.svelte';
   import GridContainer from '$lib/components/common/GridContainer.svelte';
@@ -8,6 +9,7 @@
   import AnnouncementIcon from '$lib/components/materialIcons/AnnouncementIcon.svelte';
   import { activateProfile, createPGPProfile } from '$lib/modules/requests';
   import { profiles as profilesStore } from '$lib/stores/profiles';
+  import AddIcon from '$lib/components/materialIcons/AddIcon.svelte';
 
   export let accountId;
   export let handleClose;
@@ -83,8 +85,13 @@
       {:else if progressIndex === 1}
         <Form on:submit={handleSubmitPGPKey}>
           <FlexContainer column gap="0.5rem">
-            <h5 class="no-margin">Submit Key</h5>
-            <TextArea name="key" placeholder="Insert Public PGP Key (or drag the file here)" bind:value={key} disabled={submitting} />
+            <FlexContainer gap="0.5rem" align_items="center" justify_content="space-between">
+              <h5 class="no-margin">Submit Key</h5>
+              <FilePicker height="auto" padding="0.1rem 0.5rem 0.1rem 0.3rem" disabled={submitting} accept=".asc" gap="0.1rem" basic rounded bind:content={key}
+                ><AddIcon dimension="18px" color="var(--basic-text-color)" /><small>Import</small></FilePicker
+              >
+            </FlexContainer>
+            <TextArea name="key" placeholder="Insert Public PGP Key (or drag the file here)" bind:value={key} disabled={submitting} acceptFileDrop={true} />
             <Button padding="0.5rem 0px" type="submit" disabled={submitting} primary rounded>Submit</Button>
             <GridContainer template_columns="18px auto" align_items="center" margin="0.5rem 0" gap="0.5rem">
               <AnnouncementIcon color="var(--icon-color)" dimension="18px" />

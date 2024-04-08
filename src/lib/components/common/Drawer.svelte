@@ -42,7 +42,7 @@
     flex-direction: column;
     position: absolute;
     z-index: 10000;
-    top: 0x;
+    top: 0px;
     left: 0px;
     height: 100vh;
     height: 100svh;
