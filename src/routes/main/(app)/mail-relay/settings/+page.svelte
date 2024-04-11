@@ -26,6 +26,7 @@
   import NewSmime from './NewSMIME.svelte';
   import ProfileList from './ProfileList.svelte';
   import SmimeExport from './SmimeExport.svelte';
+  import AccountPreferences from './AccountPreferences.svelte';
 
   let exportModalOpened;
   let newProfileModalOpened;
@@ -287,6 +288,8 @@
         </FlexContainer>
       </FlexContainer>
     {/if}
+
+    <AccountPreferences account={selectedAccount} />
 
     {#if !selectedAccount?.default}
       <DangerZone handleAccountDeleted={fetchRelayAccounts} id={selectedAccount?.id} email={selectedAccount?.email} />
