@@ -289,7 +289,9 @@
       </FlexContainer>
     {/if}
 
-    <AccountPreferences account={selectedAccount} />
+    {#if $isEnhancedProtection}
+      <AccountPreferences account={selectedAccount} />
+    {/if}
 
     {#if !selectedAccount?.default}
       <DangerZone handleAccountDeleted={fetchRelayAccounts} id={selectedAccount?.id} email={selectedAccount?.email} />
@@ -303,7 +305,7 @@
         <CheckCircleIcon dimension="18px" /><span><small>Get Unlimited Privacy Addresses</small></span>
         <CheckCircleIcon dimension="18px" /><span><small>Add up to 5 personal emails</small></span>
         <CheckCircleIcon dimension="18px" /><span><small>Encrypt emails with PGP or S/MIME</small></span>
-        <CheckCircleIcon dimension="18px" /><span><small>Encrypted Outbound Mail</small></span>
+        <CheckCircleIcon dimension="18px" /><span><small>Send encrypted outbound mail</small></span>
         <CheckCircleIcon dimension="18px" /><span><small>Stop metadata leaks</small></span>
         <CheckCircleIcon dimension="18px" /><span><small>And much more...</small></span>
       </GridContainer>
