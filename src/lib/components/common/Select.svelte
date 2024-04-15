@@ -24,6 +24,7 @@
     font-family: var(--font-serif);
     font-size: 0.9rem;
     width: var(--width);
+    max-width: 100%;
     background-color: var(--base-color);
     border-color: var(--border-color);
     color: var(--text-color);
