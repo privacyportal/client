@@ -7,12 +7,22 @@
   const DAY_IN_SECS = 86400;
 
   export let metrics;
+  $: updateChart(metrics);
+
   let canvas;
+  let chart;
 
   function getTimestampAtMidnightInSecs() {
     var d = new Date();
     d.setUTCHours(0, 0, 0, 0);
     return Math.floor(d.getTime() / 1000);
+  }
+
+  function updateChart(metrics) {
+    if (chart) {
+      chart.data = extractData(metrics);
+      chart.update();
+    }
   }
 
   function extractData(metrics) {
@@ -59,7 +69,7 @@
 
   onMount(() => {
     // create chart
-    new Chart(canvas, {
+    chart = new Chart(canvas, {
       type: 'line',
       data: extractData(metrics),
       options: {
