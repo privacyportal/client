@@ -29,6 +29,7 @@
   import { activeAccountsById } from '$lib/stores/relay';
   import { onMount } from 'svelte';
   import NewRecipient from './NewRecipient.svelte';
+  import AddressActivity from './AddressActivity.svelte';
 
   export let editMode = false;
   export let id = undefined;
@@ -37,6 +38,7 @@
   export let value = undefined;
   export let fwd_to = undefined;
   export let oauth_app_id = undefined;
+  export let metrics = undefined;
   export let deactivated_at = undefined;
   export let created_at = undefined;
   export let bounce = undefined;
@@ -245,8 +247,8 @@
   });
 </script>
 
-<FlexContainer column height="calc(100vh - 82px)" gap="1rem" justify_content="space-between" align_items="center">
-  <FlexContainer column gap="1rem" align_items="center">
+<FlexContainer column height="calc(100vh - 82px)" justify_content="space-between" align_items="center">
+  <FlexContainer column gap="1rem" align_items="center" padding="0px 0px 1rem 0px">
     <FlexContainer column bgColor="var(--new-layer-color)" padding="1.5rem" gap="0.7rem" rounded mobileScale>
       <GridContainer template_columns="60px auto" gap="1rem">
         <FlexContainer width="auto" column textCentered gap="0.25rem">
@@ -357,15 +359,7 @@
       </GridContainer>
       {#if editMode}
         <hr class="no-margin divider" />
-        <FlexContainer
-          column
-          align_items="flex-start"
-          bgColor="var(--new-layer-color)"
-          padding="0.5rem"
-          gap={!deactivated_at || relayAccountsSelectOptions.length < 2 ? '0.1rem' : '0.3rem'}
-          rounded
-          autooverflow
-        >
+        <FlexContainer column align_items="flex-start" bgColor="var(--new-layer-color)" padding="0.5rem" gap="0.3rem" rounded autooverflow>
           <FlexContainer align_items="center" justify_content="space-between" gap="0.5rem">
             <h5 class="no-margin">Forward to</h5>
             <Toggle on:click={handleActivationToggle} size="13px" checked={!deactivated_at} disabled={activationChanging} />
@@ -414,8 +408,11 @@
           </GridContainer>
           <Button on:click={gotoPage('/account')} padding="0.3rem 0.4rem" primary rounded><small>Go to Account</small></Button>
         </FlexContainer>
-      {:else if $isEnhancedProtection && !deactivated_at && !oauth_app_id}
-        <NewRecipient {id} acct_id={fwd_to} privacyAddress={value} />
+      {:else if $isEnhancedProtection}
+        {#if !deactivated_at && !oauth_app_id}
+          <NewRecipient {id} acct_id={fwd_to} privacyAddress={value} />
+        {/if}
+        <AddressActivity {metrics} />
       {/if}
     {/if}
   </FlexContainer>
