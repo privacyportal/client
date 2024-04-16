@@ -35,6 +35,8 @@
 
   /* layers add opacity over underlying colors */
   --new-layer-color: #0000000d;
+  --new-layer-x2-color: #0000001a;
+  --new-layer-x3-color: #00000026;
   --down-layer-color: #ffffff4d;
   --base-hover-brightness: 87%;
   --base-selection-brightness: 80%;
@@ -99,6 +101,8 @@ body {
 
   /* layers add opacity over underlying colors */
   --new-layer-color: #ffffff0d;
+  --new-layer-x2-color: #ffffff1a;
+  --new-layer-x3-color: #ffffff26;
   --down-layer-color: #242c384d;
   --base-hover-brightness: 115%;
   --base-selection-brightness: 125%;
