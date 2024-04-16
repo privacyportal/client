@@ -20,6 +20,11 @@
   let tooltipSelectedIndex = 0;
   let chart;
 
+  function resetTooltipSelection() {
+    clearTimeout(tooltipTimer);
+    tooltipSelectedIndex = 0;
+  }
+
   function getTimestampAtMidnightInSecs() {
     var d = new Date();
     d.setUTCHours(0, 0, 0, 0);
@@ -28,6 +33,7 @@
 
   function updateChart(metrics) {
     if (chart) {
+      resetTooltipSelection();
       chart.update(extractData(metrics));
     }
   }
@@ -124,7 +130,7 @@
         });
 
         data.element._node.addEventListener('click', (e) => {
-          clearTimeout(tooltipTimer);
+          resetTooltipSelection();
           tooltip.style.top = data.y > 50 ? data.y - 60 + 'px' : data.y + 5 + 'px';
           tooltip.style.left = data.x > 200 ? data.x - 85 + 'px' : data.x + 5 + 'px';
 
@@ -177,7 +183,7 @@
   .chart {
     position: relative;
     width: 100%;
-    max-height: calc(20vh + 1rem);
+    max-height: calc(max(20vh, 150px) + 1rem);
     padding-bottom: 1rem;
   }
 
