@@ -8,10 +8,13 @@
   import Section from '$lib/components/common/Section.svelte';
   import Logo from '$lib/components/svg/Logo.svelte';
   import { base64ToBuffer, bufferToBase64 } from '$lib/modules/auth';
+  import { LANDING_CLIENT_URL } from '$lib/modules/constants';
   import { displayError } from '$lib/modules/errors';
   import { recoverAccount, recoverAccountChallenge, requestAccountRecoveryCode, resendCode, signIn, signInChallenge, signUp, signUpChallenge, verifyEmail } from '$lib/modules/requests';
   import { isDarkMode, session } from '$lib/stores/account';
   import { showSnackbar } from '$lib/stores/snackbar';
+  import InfoIcon from '../materialIcons/InfoIcon.svelte';
+  import GridContainer from './GridContainer.svelte';
 
   export let allowSignUp = true;
   export let headerHeight = '50px';
@@ -299,6 +302,15 @@
               </FlexContainer>
             </Form>
             <a on:click={toggleShowSignIn} href={$page.url.pathname === '/signup' ? '/' : undefined}>Sign in to existing account</a>
+
+            <a href={`${LANDING_CLIENT_URL}/blog/introduction-to-passwordless-authentication`} target="_blank">
+              <FlexContainer column align_items="center" color="var(--primary-text-color)">
+                <GridContainer width="auto" align_items="center" justify_items="start" template_columns="15px auto" gap="0.3rem">
+                  <InfoIcon dimension="15px" color="var(--primary-text-color)" />
+                  <span class="xs">Passwordless and Private</span>
+                </GridContainer>
+              </FlexContainer>
+            </a>
           {/if}
         </FlexContainer>
       {/if}
