@@ -155,7 +155,7 @@
                   {#if consent_scope.includes('email')}
                     <h5 class="no-margin">Email</h5>
                     <FlexContainer column>
-                      <span class="sm">New Privacy Address</span>
+                      <span class="sm">New Privacy Alias</span>
                       <span class="xs">Forwards to: {$session.email}</span>
                     </FlexContainer>
                   {:else if authorized_data?.email}

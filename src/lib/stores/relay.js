@@ -4,7 +4,7 @@ export const relayAccounts = writable([]);
 export const activeAccountsById = writable([]);
 export const fwdToFilters = derived(activeAccountsById, ($activeAccountsById) => {
   return [
-    { value: undefined, text: 'All Personal Addresses' },
+    { value: undefined, text: 'All Mailboxes' },
     ...Object.keys($activeAccountsById).map((acct_id) => ({
       value: acct_id,
       text: $activeAccountsById[acct_id].email

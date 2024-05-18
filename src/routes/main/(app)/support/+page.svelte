@@ -60,7 +60,7 @@
     { text: 'Usage Question', value: 'usage' },
     { text: 'Private Account Question', value: 'support' },
     { text: 'Mail Deliverability Issue', value: 'mail_deliverability' },
-    { text: 'Report Privacy Address Rejection', value: 'rejection' },
+    { text: 'Report Privacy Alias Rejection', value: 'rejection' },
     { text: 'Report Issue', value: 'issue' },
     { text: 'Report Spam Mail', value: 'spam' },
     { text: 'Feature Request', value: 'feature' },
@@ -85,7 +85,7 @@
       case 'mail_deliverability':
         return `${mailDeliverabilityType} mail issue for ${domain}`;
       case 'rejection':
-        return `privacy address rejected by: ${url}`;
+        return `privacy alias rejected by: ${url}`;
     }
     return message;
   }
@@ -162,7 +162,7 @@
               </li>
               <li>
                 <span class="sm"
-                  ><strong>Deactivate</strong> or <strong>Delete</strong> the Privacy Address that is receiving spam. These addresses should be used for single purpose and deactivating them should only
+                  ><strong>Deactivate</strong> or <strong>Delete</strong> the Privacy Alias that is receiving spam. These addresses should be used for single purpose and deactivating them should only
                   impact the spamming party.</span
                 >
               </li>
@@ -191,7 +191,7 @@
             </GridContainer>
           {:else if supportTopic === 'rejection'}
             <span class="sm"
-              >Some websites mistakenly or purposefully reject Privacy Addresses. You could reach out to their support to let them know why this is bad for your privacy and security.</span
+              >Some websites mistakenly or purposefully reject Privacy Aliases. You could reach out to their support to let them know why this is bad for your privacy and security.</span
             >
             <Button height="25px" on:click={gotoExt(`mailto:?subject=${EMAIL_SUBJECT_DRAFT}&body=${EMAIL_BODY_DRAFT}`)} xsmall border rounded>Create Draft</Button>
             <hr class="divider sm-v-margin" />

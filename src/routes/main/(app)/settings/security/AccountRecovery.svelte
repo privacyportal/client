@@ -116,7 +116,7 @@
             <span class="xs">loading...</span>
           {:else if authenticators.filter((authenticator) => !!authenticator.enabled).length > 1}
             <CheckCircleIcon dimension="18px" />
-            <span class="sm">Your account can be accessed using multiple authenticators.</span>
+            <span class="sm">Your account can be accessed using multiple Passkeys.</span>
 
             {#if emailRecovery?.enabled}
               <CheckCircleIcon color={emailRecovery?.totp ? 'var(--positive-color)' : 'var(--warning-color)'} dimension="18px" />
@@ -127,10 +127,10 @@
             <span class="sm">Your account can be recovered using the primary email account.{!emailRecovery?.totp ? ' But Two Factor Authentication is not configured.' : ''}</span>
 
             <WarningIcon color="var(--warning-color)" dimension="18px" />
-            <span class="sm">You have not configured any additional authenticators for emergency access.</span>
+            <span class="sm">You have not configured any additional Passkeys for emergency access.</span>
           {:else}
             <WarningIcon color="var(--warning-color)" dimension="18px" />
-            <span class="sm">Your account cannot be recovered in case of device loss. Configure an additional authenticator for emergency access.</span>
+            <span class="sm">Your account cannot be recovered in case of device loss. Configure an additional Passkeys for emergency access.</span>
           {/if}
         </GridContainer>
       </FlexContainer>

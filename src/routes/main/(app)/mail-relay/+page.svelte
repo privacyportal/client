@@ -271,7 +271,7 @@
   <Form on:submit={closeOnExit(() => handleSearch())}>
     <FlexContainer column gap="1rem">
       <FlexContainer align_items="center" justify_content="space-between">
-        <h4 class="no-margin">Search Addresses</h4>
+        <h4 class="no-margin">Search Aliases</h4>
         <Button on:click={() => (searchModalOpened = false)} height="auto" blendin rounded><CloseIcon /></Button>
       </FlexContainer>
       <FlexContainer column gap="1rem">
@@ -354,7 +354,7 @@
           {:else}
             <GridContainer height="100%" padding="0.2rem 0.3rem" align_items="center" template_columns="1fr auto 1fr" color="var(--text-light-color)">
               <div />
-              <span class="oneline">{addressLimitReached ? 'Get More Addresses' : 'New Address'}</span>
+              <span class="oneline">{addressLimitReached ? 'Get More Aliases' : 'New Alias'}</span>
               <FlexContainer height="100%" align_items="flex-end" justify_content="flex-end" color="inherit">
                 {#if !fetchingAddresses && !$isEnhancedProtection && addressesCount !== undefined && oidcAddressesCount !== undefined && addressesCount - oidcAddressesCount >= MAX_BASIC_PROTECTION_ADDRESSES}
                   <span class="xs">{Math.max(MAX_BASIC_PROTECTION_ADDRESSES - (addressesCount - oidcAddressesCount), 0)} remaining</span>

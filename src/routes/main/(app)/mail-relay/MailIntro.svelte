@@ -9,7 +9,7 @@
   <FlexContainer column gap="1.5rem">
     <FlexContainer column textCentered gap="0.5rem">
       <h4>Keep your personal email address private.</h4>
-      <p>Create disposable addresses that forward emails to your personal inbox.</p>
+      <p>Create privacy email aliases that forward emails to your personal inbox.</p>
     </FlexContainer>
 
     <FlexContainer column textCentered gap="0.5rem">
