@@ -21,7 +21,6 @@
   import { onDestroy, onMount } from 'svelte';
   import AdvancedConfig from './AdvancedConfig.svelte';
   import DangerZone from './DangerZone.svelte';
-  import NewAccount from './NewAccount.svelte';
   import NewPgp from './NewPGP.svelte';
   import NewSmime from './NewSMIME.svelte';
   import ProfileList from './ProfileList.svelte';
@@ -31,7 +30,6 @@
   let exportModalOpened;
   let newProfileModalOpened;
   let showPGP = true;
-  let newAccountModalOpened;
   let loading = false;
   let fetchingAccountProfiles;
   let relayAccounts = [];
@@ -165,14 +163,10 @@
   </FlexContainer>
 </Modal>
 
-<Modal bind:open={newAccountModalOpened} header minWidth="300px" maxWidth="500px">
-  <NewAccount handleClose={() => (newAccountModalOpened = false)} />
-</Modal>
-
 <Modal bind:open={accountsModalOpened} header minWidth="300px" maxWidth="500px">
   <FlexContainer column gap="1rem">
     <FlexContainer align_items="center" justify_content="space-between">
-      <h3 class="no-margin">Select Account</h3>
+      <h3 class="no-margin">Select Mailbox</h3>
       <Button
         height="auto"
         on:click={() => {
@@ -204,7 +198,7 @@
       <Form on:submit={handleAddAccount}>
         <GridContainer align_items="center" template_columns="1fr auto" mobile_template_columns="minmax(50%, 1fr) auto" gap="0.5rem">
           <Input type="email" name="email" placeholder="Email" bind:value={addAccountEmail} disabled={loading} />
-          <Button type="submit" padding="0 0.5rem" disabled={loading} primary="true" rounded><small>Add Account</small></Button>
+          <Button type="submit" padding="0 0.5rem" disabled={loading} primary="true" rounded><small>Add Mailbox</small></Button>
         </GridContainer>
       </Form>
     {/if}
@@ -218,9 +212,12 @@
     <h5 class="no-margin">Loading...</h5>
   {:else}
     {#if $isEnhancedProtection || relayAccounts.length > 1}
-      <Button width="100%" on:click={() => (accountsModalOpened = true)} padding="0 0 0 0.5rem" rounded border>
+      <Button height="auto" width="100%" on:click={() => (accountsModalOpened = true)} padding="0.2rem 0 0.2rem 0.5rem" rounded border>
         <GridContainer align_items="center" template_columns="1fr 20px" gap="0.5rem" padding="0 0 0 0.3rem">
-          <span>{selectedAccount.email}</span>
+          <FlexContainer column gap="0.1rem">
+            <span>{selectedAccount.email}</span>
+            <span class="xs">Selected Mailbox</span>
+          </FlexContainer>
           <ArrowDropDownIcon dimension="20px" />
         </GridContainer>
       </Button>
@@ -274,7 +271,7 @@
     {:else}
       <FlexContainer column padding="1rem" bgColor="var(--new-layer-color)" gap="0.5rem" rounded>
         <FlexContainer column gap="0.7rem">
-          <h3 class="no-margin">Account Verification</h3>
+          <h3 class="no-margin">Mailbox Verification</h3>
           <span class="no-margin sm">A verification code has been sent to your email.</span>
           <Form on:submit={() => handleVerificationSubmitted(selectedAccountId)}>
             <FlexContainer column align_items="center" gap="0.5rem">
@@ -302,7 +299,7 @@
     <FlexContainer column bgColor="var(--new-layer-color)" padding="1.5rem" gap="0.7rem" rounded mobileScale>
       <h4 class="no-margin">Get Enhanced Protection</h4>
       <GridContainer gap="0.25rem" align_items="center" template_columns="20px auto">
-        <CheckCircleIcon dimension="18px" /><span><small>Get Unlimited Privacy Addresses</small></span>
+        <CheckCircleIcon dimension="18px" /><span><small>Get Unlimited Privacy Aliases</small></span>
         <CheckCircleIcon dimension="18px" /><span><small>Add up to 5 personal emails</small></span>
         <CheckCircleIcon dimension="18px" /><span><small>Encrypt emails with PGP or S/MIME</small></span>
         <CheckCircleIcon dimension="18px" /><span><small>Send encrypted outbound mail</small></span>

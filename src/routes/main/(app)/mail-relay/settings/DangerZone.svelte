@@ -45,10 +45,10 @@
     </Button>
 
     {#if viewExpanded}
-      <Button on:click={handleDeleteApp} margin="0.3rem 0 0 0" disabled={loading} danger rounded><small>Delete Account</small></Button>
+      <Button on:click={handleDeleteApp} margin="0.3rem 0 0 0" disabled={loading} danger rounded><small>Delete Mailbox</small></Button>
       <GridContainer template_columns="18px auto" align_items="center" margin="0 0 0 0" gap="0.5rem">
         <AnnouncementIcon color="var(--icon-color)" dimension="18px" />
-        <span class="note">Deleting a Mail Relay account completely removes this personal email address from our servers.</span>
+        <span class="note">Deleting a Mailbox completely removes its email address from our servers.</span>
       </GridContainer>
     {/if}
   </FlexContainer>

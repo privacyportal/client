@@ -84,7 +84,7 @@
 
       // authenticator registered successfully
       if (done) {
-        showSnackbar({ text: 'Please activate your newly registered authenticator using one of your trusted authenticators.', ttl: 15000 });
+        showSnackbar({ text: 'Please activate your newly registered Passkey using one of your trusted Passkeys.', ttl: 15000 });
         done();
       }
     } finally {
@@ -99,7 +99,7 @@
 
 <FlexContainer column gap="0.5rem" padding="1rem 1rem 0.5rem 1rem">
   <FlexContainer align_items="center" justify_content="space-between">
-    <h3 class="no-margin oneline">Register new authenticator</h3>
+    <h3 class="no-margin oneline">Register new Passkey</h3>
     <Button margin="auto -0.25rem auto auto" on:click={cancel} height="auto" blendin light rounded>
       <CloseIcon />
     </Button>

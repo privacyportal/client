@@ -15,6 +15,7 @@
   import NewApiKey from './NewApiKey.svelte';
   import NewAuthenticator from './NewAuthenticator.svelte';
   import { minuteTimer } from '$lib/stores/timers';
+  import { LANDING_CLIENT_URL } from '$lib/modules/constants';
 
   const MAX_API_KEYS = 5;
   const MAX_AUTHENTICATORS = 10;
@@ -124,11 +125,11 @@
 <FlexContainer column padding="1rem" align_items="flex-start" justify_content="flex-start" gap="1rem">
   <h1 class="no-margin">Security</h1>
   <FlexContainer column padding="1rem" bgColor="var(--new-layer-color)" gap="0.5rem" rounded>
-    <h4 class="no-margin">Authenticators</h4>
-    <span class="sm">Adding additional authenticators allows you to sign in from multiple devices and prevents you from getting locked out of your account in the event of a device loss.</span>
+    <h4 class="no-margin">Passkeys</h4>
+    <span class="sm">Adding additional Passkeys allows you to sign in from multiple devices and prevents you from getting locked out of your account in the event of a device loss.</span>
 
     <FlexContainer mainList column gap="0px">
-      <Button on:click={() => (newAuthenticatorModalOpened = true)} disabled={authenticators?.length >= MAX_AUTHENTICATORS} margin="0.5rem 0" primary rounded>New Authenticator</Button>
+      <Button on:click={() => (newAuthenticatorModalOpened = true)} disabled={authenticators?.length >= MAX_AUTHENTICATORS} margin="0.5rem 0" primary rounded>New Passkey</Button>
       {#if loadingAuthenticators}
         <p>loading...</p>
       {:else}
@@ -156,7 +157,7 @@
       {/if}
       <GridContainer template_columns="18px auto" align_items="center" margin="1.2rem 0 0.5rem 0" gap="0.5rem">
         <AnnouncementIcon color="var(--icon-color)" dimension="18px" />
-        <span class="note">We recommend registering a second authenticator to be used as a recovery mechanism in case of device loss.</span>
+        <span class="note">We recommend registering a second Passkey to be used as a recovery mechanism in case of device loss.</span>
       </GridContainer>
     </FlexContainer>
   </FlexContainer>
@@ -165,7 +166,7 @@
 
   <FlexContainer column padding="1rem" bgColor="var(--new-layer-color)" gap="0.5rem" rounded>
     <h4 class="no-margin">API Keys</h4>
-    <span class="sm">Create API Keys to automate your flow by direclty using our API or through 3rd party applications.</span>
+    <span class="sm">Create API Keys to automate your flow by directly using our <strong><a href={`${LANDING_CLIENT_URL}/developers/api-docs`}>API</a></strong> or through 3rd party applications.</span>
     <FlexContainer mainList column gap="0px">
       <Button on:click={() => (newApiKeyModalOpened = true)} disabled={validApiKeys?.length >= MAX_API_KEYS} margin="0.5rem 0" primary rounded>New API Key</Button>
       {#if loadingApiKeys}
@@ -195,5 +196,10 @@
 <style>
   .text-centered {
     text-align: center;
+  }
+
+  a {
+    text-decoration: none;
+    color: var(--text-color);
   }
 </style>

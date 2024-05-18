@@ -80,7 +80,7 @@
     <GridContainer template_columns="18px auto" align_items="center" margin="0 0 0 0" gap="0.5rem">
       <AnnouncementIcon color="var(--icon-color)" dimension="18px" />
       <span class="note"
-        >When your Enhanced Protection plan expires, you will have the option to purchase additional time or you can continue using existing Privacy Addresses with Basic Protection features.</span
+        >When your Enhanced Protection plan expires, you will have the option to purchase additional time or you can continue using existing Privacy Aliases with Basic Protection features.</span
       >
     </GridContainer>
   </FlexContainer>
@@ -109,7 +109,7 @@
         </FlexContainer>
         <hr class="divider sm-v-margin" />
         <GridContainer align_items="flex-start" template_columns="1rem auto" gap="0.5rem" margin="0px auto auto auto">
-          <CheckCircleIcon dimension="20px" /><span><small>Up to 20 Privacy Addresses</small></span>
+          <CheckCircleIcon dimension="20px" /><span><small>Up to 20 Privacy Aliases</small></span>
           <CheckCircleIcon dimension="20px" /><span><small>Secure Relay Connections (TLS)</small></span>
           <CheckCircleIcon dimension="20px" /><span><small>SPF, DKIM, and DMARC</small></span>
           <CheckCircleIcon dimension="20px" /><span><small>Spam Filtering + Virus Protection</small></span>
@@ -132,7 +132,7 @@
         </FlexContainer>
         <hr class="divider sm-v-margin" />
         <GridContainer align_items="flex-start" template_columns="1rem auto" gap="0.5rem" margin="0px auto auto auto">
-          <CheckCircleIcon dimension="20px" /><span><small><span class="xs strikethrough">Unlimited</span> <strong class="beta">Up to 100</strong> Privacy Addresses</small></span>
+          <CheckCircleIcon dimension="20px" /><span><small><span class="xs strikethrough">Unlimited</span> <strong class="beta">Up to 100</strong> Privacy Aliases</small></span>
           <CheckCircleIcon dimension="20px" /><span><small>Up to 5 Personal Accounts</small></span>
           <CheckCircleIcon dimension="20px" /><span><small>Email Encryption (PGP or S/MIME)</small></span>
           <CheckCircleIcon dimension="20px" /><span><small>Encrypted Outbound Mail <span class="xs beta">(replies only)</span></small></span>

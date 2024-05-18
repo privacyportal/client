@@ -305,14 +305,14 @@
             {/if}
             <InputLabel>
               <LabelIcon slot="icon" />
-              <Input slot="input" type="text" name="label" placeholder="Label Your Address" autocomplete="off" maxlength={MAX_LABEL_LENGTH} bind:value={_label} icon disabled={loading} focus />
+              <Input slot="input" type="text" name="label" placeholder="Label Your Alias" autocomplete="off" maxlength={MAX_LABEL_LENGTH} bind:value={_label} icon disabled={loading} focus />
             </InputLabel>
             <InputLabel>
               <DescriptionIcon slot="icon" />
               <Input slot="input" type="text" name="note" required={false} placeholder="Note" autocomplete="off" maxlength={MAX_NOTE_LENGTH} bind:value={_note} icon disabled={loading} />
             </InputLabel>
             {#if !editMode}
-              <Button type="submit" disabled={loading} primary="true" rounded>Create Address</Button>
+              <Button type="submit" disabled={loading} primary="true" rounded>Create Alias</Button>
             {:else if dirty}
               <Button type="submit" disabled={loading} primary="true" rounded>Save</Button>
             {/if}
@@ -321,7 +321,7 @@
       {/if}
       <hr class="no-margin divider" />
       <FlexContainer align_items="center" justify_content="space-between">
-        <h4 class="no-margin">Privacy Address</h4>
+        <h4 class="no-margin">Privacy Alias</h4>
         {#if editMode}
           {#if $isEnhancedProtection && activeProfile}
             <Tag backgroundColor={deactivated_at ? 'var(--disabled-color)' : 'var(--positive-color)'} padding="0.1rem 0.2rem">
@@ -399,7 +399,7 @@
         <FlexContainer column bgColor="var(--new-layer-color)" padding="1.5rem" gap="0.7rem" rounded mobileScale>
           <h4 class="no-margin">Get Enhanced Protection</h4>
           <GridContainer gap="0.25rem" align_items="center" template_columns="20px auto">
-            <CheckCircleIcon dimension="18px" /><span><small>Get Unlimited Privacy Addresses</small></span>
+            <CheckCircleIcon dimension="18px" /><span><small>Get Unlimited Privacy Aliases</small></span>
             <CheckCircleIcon dimension="18px" /><span><small>Add up to 5 personal emails</small></span>
             <CheckCircleIcon dimension="18px" /><span><small>Encrypt emails with PGP or S/MIME</small></span>
             <CheckCircleIcon dimension="18px" /><span><small>Send Encrypted Outbound Mail</small></span>
