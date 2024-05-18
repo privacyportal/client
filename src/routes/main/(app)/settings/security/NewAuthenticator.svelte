@@ -109,11 +109,11 @@
 
 <FlexContainer column gap="0.5rem" nooverflow padding="0px 1rem 1rem 1rem">
   {#if selectedNewAuthenticatorType === 'current'}
-    <p class="sm-v-margin">To register, plug or connect your new authenticator to this device then click on "Register Authenticator".</p>
+    <p class="sm-v-margin">To register a security key, plug or connect your key to this device then click on "Register Passkey".</p>
     <Form on:submit={registerDevice} width="100%">
       <FlexContainer column gap="0.5rem">
         <Input type="text" placeholder="Label" maxlength="50" bind:value={label} />
-        <Button type="submit" primary rounded disabled={loading || !credentialCreationOptions}>Register Authenticator</Button>
+        <Button type="submit" primary rounded disabled={loading || !credentialCreationOptions}>Register Passkey</Button>
       </FlexContainer>
     </Form>
   {:else}
