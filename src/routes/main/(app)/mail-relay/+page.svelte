@@ -294,7 +294,7 @@
           </InputLabel>
           {#if $fwdToFilters.length > 2}
             <FlexContainer align_items="center" gap="0.5rem">
-              <h6 class="no-margin">Filter by<br />account</h6>
+              <h6 class="no-margin">Filter by<br />mailbox</h6>
               <Select bind:value={fwdToFilterInput} options={$fwdToFilters} disabled={searching} />
             </FlexContainer>
           {/if}
