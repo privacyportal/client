@@ -35,7 +35,7 @@
 
   async function parseError(err) {
     try {
-      return JSON.parse(err.message);
+      return { status: err.status, ...err.body };
     } catch {
       return { status: 503 };
     }
