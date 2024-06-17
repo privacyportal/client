@@ -34,11 +34,7 @@
   let submitting = false;
 
   async function parseError(err) {
-    try {
-      return { status: err.status, ...err.body };
-    } catch {
-      return { status: 503 };
-    }
+    return { status: err?.status || 503, ...(err?.body?.error && { body: err.body }) }
   }
 
   async function cancelAuthorization() {
