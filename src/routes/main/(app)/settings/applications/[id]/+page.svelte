@@ -18,6 +18,7 @@
   import DomainVerification from './DomainVerification.svelte';
   import EditAppIcon from './EditAppIcon.svelte';
   import MailRelay from './MailRelay.svelte';
+  import Toggle from '$lib/components/common/Toggle.svelte';
 
   let loading = false;
 
@@ -28,6 +29,7 @@
   let url;
   let domains;
   let callback_urls;
+  let pkce;
   let published_at;
   let dirtyCallbackURLs;
   let selectedSection = 0;
@@ -38,7 +40,8 @@
   $: _name = name;
   $: _url = url;
   $: _callback_urls = [...(callback_urls || [])];
-  $: dirtyAppInfo = _name !== name || _url !== url || JSON.stringify(_callback_urls) !== JSON.stringify(callback_urls);
+  $: _pkce = pkce;
+  $: dirtyAppInfo = _name !== name || _url !== url || _pkce !== pkce || JSON.stringify(_callback_urls) !== JSON.stringify(callback_urls);
 
   function removeCallbackUrl(index) {
     _callback_urls.splice(index, 1);
@@ -63,6 +66,7 @@
     domains = data.domains;
     mainDomain = data.domains[0];
     callback_urls = data.callback_urls;
+    pkce = data.pkce;
     published_at = data.published_at;
   }
 
@@ -73,7 +77,8 @@
         id: $page.params.id,
         name: _name,
         url: _url,
-        callback_urls: _callback_urls
+        callback_urls: _callback_urls,
+        pkce: _pkce
       });
       setData(res.data);
     } catch (err) {
@@ -264,6 +269,16 @@
                   ><AddIcon color="var(--color)" dimension="16px" />Add Callback URL</Button
                 >
               </GridContainer>
+            </FlexContainer>
+
+            <div class="gridline" />
+
+            <FlexContainer column gap="0.15rem">
+              <FlexContainer align_items="center" justify_content="space-between" gap="0.5rem">
+                <h5 class="no-margin">Enable PKCE</h5>
+                <Toggle size="13px" bind:checked={_pkce} disabled={loading} />
+              </FlexContainer>
+              <span class="xs">PKCE is recommended for all OAUTH2 clients for better security.</span>
             </FlexContainer>
 
             {#if dirtyAppInfo || dirtyCallbackURLs}
