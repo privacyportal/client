@@ -34,7 +34,7 @@
 
 <FlexContainer column padding="1rem" bgColor="var(--new-layer-color)" gap="0.5rem" rounded>
   <h4 class="no-margin">Email Subscriptions</h4>
-  <span class="sm">Subscribe to our emails to get latest development on Privacy Portal products. You can also visit our <a href={LANDING_CLIENT_URL + '/blog'}>blog</a>.</span>
+  <span class="sm">Subscribe to our emails to get the latest developments on Privacy Portal products. You can also visit our <a href={LANDING_CLIENT_URL + '/blog'}>blog</a>.</span>
   <div class="gridline" />
 
   {#if emailSubscriptions}
