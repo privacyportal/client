@@ -545,14 +545,15 @@ export async function registerOAuthApplication({ name, url, callback_urls }) {
   });
 }
 
-export async function updateOAuthApplication({ id, name, url, callback_urls }) {
+export async function updateOAuthApplication({ id, name, url, callback_urls, pkce }) {
   return await sendRequest({
     method: 'PATCH',
     path: `/oauth/apps/${id}`,
     data: {
       name,
       url,
-      callback_urls
+      callback_urls,
+      pkce
     }
   });
 }

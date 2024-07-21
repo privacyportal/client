@@ -20,6 +20,8 @@
   let state = searchParams.get('state');
   let prompt = searchParams.get('prompt');
   let nonce = searchParams.get('nonce');
+  let code_challenge = searchParams.get('code_challenge');
+  let code_challenge_method = searchParams.get('code_challenge_method');
 
   let client_info;
   let authorized_data;
@@ -73,6 +75,8 @@
                   ...(scope.includes('email') && { email: true })
                 }
               }),
+            ...(code_challenge && { code_challenge }),
+            ...(code_challenge_method && { code_challenge_method }),
             ...(prompt && { prompt }),
             ...(state && { state }),
             ...(nonce && { nonce })
