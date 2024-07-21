@@ -83,8 +83,7 @@
           <Toggle on:click={() => updateEmailRecoveryToggle(!emailRecovery?.enabled)} size="12px" warning={!emailRecovery?.totp} disabled={updating} checked={emailRecovery?.enabled} />
         </FlexContainer>
         <span class="xs"
-          >Use your primary email to regain access to your Privacy Portal account.{#if !emailRecovery?.totp}
-            For better security, please enable Two Factor Authentication.{/if}</span
+          >Use your primary email to regain access to your Privacy Portal account.{emailRecovery?.totp ? "" : " For better security, please enable Two Factor Authentication"}</span
         >
         {#if emailRecovery?.enabled}
           {#if !emailRecovery?.totp}
@@ -130,7 +129,7 @@
             <span class="sm">You have not configured any additional Passkeys for emergency access.</span>
           {:else}
             <WarningIcon color="var(--warning-color)" dimension="18px" />
-            <span class="sm">Your account cannot be recovered in case of device loss. Configure an additional Passkeys for emergency access.</span>
+            <span class="sm">Your account cannot be recovered in case of device loss. Configure an additional Passkey for emergency access.</span>
           {/if}
         </GridContainer>
       </FlexContainer>
