@@ -237,7 +237,7 @@
                   type="text"
                   name="url"
                   placeholder="https://<app.url>"
-                  pattern="^http(s:\/\/.+|:\/\/localhost:[0-9]+)$"
+                  pattern="^http(s:\/\/.+|:\/\/(.+\.local|localhost:[0-9]+))$"
                   autocomplete="off"
                   bind:value={_url}
                   disabled={loading}
@@ -254,7 +254,7 @@
                     type="text"
                     name={`callback_url_${index}`}
                     placeholder="https://<app.url>"
-                    pattern="^http(s:\/\/.+|:\/\/localhost:[0-9]+\/.+)$"
+                    pattern="^http(s:\/\/.+|:\/\/(.+\.local|localhost:[0-9]+)(\/.*)?)$"
                     autocomplete="off"
                     on:input={(e) => handleCallbackUrlInput(e, index)}
                     value={callback_url}
