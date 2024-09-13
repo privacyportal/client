@@ -91,3 +91,21 @@ export function convertToHostname(url) {
 export function writeValueToClipboard(value) {
   setTimeout(async () => await navigator.clipboard.writeText(value));
 }
+
+export function getMonthStartTS() {
+  let d = new Date();
+  d.setUTCDate(1);
+  d.setUTCHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
+export function addMonthsToTimestamp(timestamp, amount = 1) {
+  const d = new Date(timestamp);
+  d.setUTCMonth(d.getUTCMonth() + amount);
+  return d.getTime();
+}
+
+export function getMonthNameFromTS(timestamp, style = 'short') {
+  const date = new Date(timestamp);
+  return date.toLocaleString('default', { month: style });
+}

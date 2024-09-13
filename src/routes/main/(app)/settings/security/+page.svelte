@@ -166,7 +166,9 @@
 
   <FlexContainer column padding="1rem" bgColor="var(--new-layer-color)" gap="0.5rem" rounded>
     <h4 class="no-margin">API Keys</h4>
-    <span class="sm">Create API Keys to automate your flow by directly using our <strong><a href={`${LANDING_CLIENT_URL}/developers/api-docs`} target="_blank">API</a></strong> or through 3rd party applications.</span>
+    <span class="sm"
+      >Create API Keys to automate your flow by directly using our <strong><a href={`${LANDING_CLIENT_URL}/developers/api-docs`} target="_blank">API</a></strong> or through 3rd party applications.</span
+    >
     <FlexContainer mainList column gap="0px">
       <Button on:click={() => (newApiKeyModalOpened = true)} disabled={validApiKeys?.length >= MAX_API_KEYS} margin="0.5rem 0" primary rounded>New API Key</Button>
       {#if loadingApiKeys}

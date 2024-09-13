@@ -19,6 +19,7 @@
   import EditAppIcon from './EditAppIcon.svelte';
   import MailRelay from './MailRelay.svelte';
   import Toggle from '$lib/components/common/Toggle.svelte';
+  import UsageMetrics from './UsageMetrics.svelte';
 
   let loading = false;
 
@@ -30,6 +31,7 @@
   let domains;
   let callback_urls;
   let pkce;
+  let active_users;
   let published_at;
   let dirtyCallbackURLs;
   let selectedSection = 0;
@@ -67,6 +69,7 @@
     mainDomain = data.domains[0];
     callback_urls = data.callback_urls;
     pkce = data.pkce;
+    active_users = data.active_users;
     published_at = data.published_at;
   }
 
@@ -182,7 +185,17 @@
           flexgrow
           ascolumn
           align_items="flex-start"
-          selected={selectedSection === 4}>Danger Zone</Button
+          selected={selectedSection === 4}>Usage Metrics</Button
+        >
+        <div class="gridline" />
+        <Button
+          on:click={() => {
+            selectedSection = 5;
+          }}
+          flexgrow
+          ascolumn
+          align_items="flex-start"
+          selected={selectedSection === 5}>Danger Zone</Button
         >
       </FlexContainer>
     </FlexContainer>
@@ -293,7 +306,8 @@
         <Credentials {clientId} {clientSecrets} {loading} selected={selectedSection === 1} />
         <AccessManagement {clientId} bind:published_at {loading} selected={selectedSection === 2} />
         <MailRelay {clientId} {domains} {loading} selected={selectedSection === 3} />
-        <DangerZone id={$page.params.id} {name} selected={selectedSection === 4} />
+        <UsageMetrics {active_users} bind:published_at {loading} selected={selectedSection === 4} />
+        <DangerZone id={$page.params.id} {name} selected={selectedSection === 5} />
       </FlexContainer>
     </FlexContainer>
   </GridContainer>
