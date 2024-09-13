@@ -2,7 +2,6 @@
   import Button from '$lib/components/common/Button.svelte';
   import FlexContainer from '$lib/components/common/FlexContainer.svelte';
   import Modal from '$lib/components/common/Modal.svelte';
-  import { isEnhancedProtection } from '$lib/stores/account';
   import { applications as applicationsStore } from '$lib/stores/applications';
   import ApplicationList from './ApplicationList.svelte';
   import NewApplication from './NewApplication.svelte';
@@ -24,11 +23,9 @@
     <h4 class="no-margin">OAuth Applications</h4>
     <span class="sm">Easily register your applications for "Sign in with Privacy Portal".</span>
 
-    {#if $isEnhancedProtection}
-      <ApplicationList {openNewApplicationModal} />
-    {/if}
+    <ApplicationList {openNewApplicationModal} />
     {#if $applicationsStore?.length === 0}
-      <Button on:click={openNewApplicationModal} disabled={!$isEnhancedProtection} primary rounded><small>New Application</small></Button>
+      <Button on:click={openNewApplicationModal} primary rounded><small>New Application</small></Button>
     {/if}
   </FlexContainer>
 </FlexContainer>
