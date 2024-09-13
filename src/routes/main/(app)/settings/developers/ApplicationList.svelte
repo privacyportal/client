@@ -44,7 +44,7 @@
       <h5 class="no-margin">Applications</h5>
       <Button on:click={openNewApplicationModal} height="auto" padding="0.3rem 0.5rem" primary rounded disabled={applications.length >= MAX_PROFILES}><small>New Application</small></Button>
     </FlexContainer>
-    <GridContainer margin="0 0 0 0" justify_items="stretch" template_columns="35px 1fr auto" align_items="center" gap="0.7rem">
+    <GridContainer margin="0 0 0 0" justify_items="stretch" template_columns="35px 1fr auto auto" align_items="center" gap="0.7rem">
       <div class="gridline"></div>
       {#each applications as application}
         <Application {application} />

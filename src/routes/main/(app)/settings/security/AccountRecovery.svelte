@@ -82,9 +82,7 @@
           <h5 class="no-margin">Enable Email Recovery</h5>
           <Toggle on:click={() => updateEmailRecoveryToggle(!emailRecovery?.enabled)} size="12px" warning={!emailRecovery?.totp} disabled={updating} checked={emailRecovery?.enabled} />
         </FlexContainer>
-        <span class="xs"
-          >Use your primary email to regain access to your Privacy Portal account.{emailRecovery?.totp ? "" : " For better security, please enable Two Factor Authentication"}</span
-        >
+        <span class="xs">Use your primary email to regain access to your Privacy Portal account.{emailRecovery?.totp ? '' : ' For better security, please enable Two Factor Authentication'}</span>
         {#if emailRecovery?.enabled}
           {#if !emailRecovery?.totp}
             <Button
