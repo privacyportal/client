@@ -2,7 +2,7 @@
   import { LineChart, Interpolation, easings } from 'chartist';
   import { onMount, onDestroy } from 'svelte';
   import FlexContainer from '$lib/components/common/FlexContainer.svelte';
-  import { addMonthsToTimestamp, getMonthNameFromTS, getMonthStartTS } from '$lib/modules/utils';
+  import { addMonthsToTimestamp, getMonthNameFromTS, getMonthStartTS, timestampToMS } from '$lib/modules/utils';
 
   export let selected;
   export let metrics;
@@ -38,7 +38,7 @@
       const label = getMonthNameFromTS(monthTS);
       const data = {
         label: getMonthNameFromTS(monthTS, 'long'),
-        count: metrics?.[`${monthTS}`] || 0
+        count: metrics?.[`${timestampToMS(monthTS)}`] || 0
       };
 
       labels.push(label);
