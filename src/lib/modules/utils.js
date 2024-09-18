@@ -109,3 +109,7 @@ export function getMonthNameFromTS(timestamp, style = 'short') {
   const date = new Date(timestamp);
   return date.toLocaleString('default', { month: style });
 }
+
+export function timestampToMS(timestamp) {
+  return Math.floor(timestamp / 1000);
+}

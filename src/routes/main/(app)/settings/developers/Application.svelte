@@ -11,8 +11,8 @@
 
   const SEVENTY_DAYS_AGO_MS = 6048000000;
 
-  $: activeUsers = Object.entries(application?.active_users || {}).reduce((result, [timestamp, count]) => {
-    return timestamp >= $minuteTimer - SEVENTY_DAYS_AGO_MS ? Math.max(result, count) : result;
+  $: activeUsers = Object.entries(application?.active_users || {}).reduce((result, [timestampInSecs, count]) => {
+    return timestampInSecs * 1000 >= $minuteTimer - SEVENTY_DAYS_AGO_MS ? Math.max(result, count) : result;
   }, 0);
 </script>
 
