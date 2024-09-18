@@ -2,7 +2,7 @@
   import { LineChart, Interpolation, easings } from 'chartist';
   import { onMount, onDestroy } from 'svelte';
   import FlexContainer from '$lib/components/common/FlexContainer.svelte';
-  import { addMonthsToTimestamp, getMonthNameFromTS, getMonthStartTS, timestampToMS } from '$lib/modules/utils';
+  import { addMonthsToTimestamp, getMonthNameFromTS, getMonthStartTS, timestampToSecs } from '$lib/modules/utils';
 
   export let selected;
   export let metrics;
@@ -38,7 +38,7 @@
       const label = getMonthNameFromTS(monthTS);
       const data = {
         label: getMonthNameFromTS(monthTS, 'long'),
-        count: metrics?.[`${timestampToMS(monthTS)}`] || 0
+        count: metrics?.[`${timestampToSecs(monthTS)}`] || 0
       };
 
       labels.push(label);
@@ -119,7 +119,7 @@
 
           const { label, count } = JSON.parse(data.meta);
           tooltipLabel = label;
-          tooltipCountValue = count > 1 ? `${count} users` : '1 user';
+          tooltipCountValue = count === 1 ? '1 user' : `${count} users`;
 
           tooltipSelectedIndex = data.index + 1;
           tooltipTimer = setTimeout(() => (tooltipSelectedIndex = 0), 5000);

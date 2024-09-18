@@ -110,6 +110,6 @@ export function getMonthNameFromTS(timestamp, style = 'short') {
   return date.toLocaleString('default', { month: style });
 }
 
-export function timestampToMS(timestamp) {
+export function timestampToSecs(timestamp) {
   return Math.floor(timestamp / 1000);
 }
