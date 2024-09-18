@@ -32,6 +32,7 @@
   let callback_urls;
   let pkce;
   let active_users;
+  let relay_metrics;
   let published_at;
   let dirtyCallbackURLs;
   let selectedSection = 0;
@@ -70,6 +71,7 @@
     callback_urls = data.callback_urls;
     pkce = data.pkce;
     active_users = data.active_users;
+    relay_metrics = data.relay_metrics;
     published_at = data.published_at;
   }
 
@@ -306,7 +308,7 @@
         <Credentials {clientId} {clientSecrets} {loading} selected={selectedSection === 1} />
         <AccessManagement {clientId} bind:published_at {loading} selected={selectedSection === 2} />
         <MailRelay {clientId} {domains} {loading} selected={selectedSection === 3} />
-        <UsageMetrics {active_users} bind:published_at {loading} selected={selectedSection === 4} />
+        <UsageMetrics {active_users} {relay_metrics} bind:published_at {loading} selected={selectedSection === 4} />
         <DangerZone id={$page.params.id} {name} selected={selectedSection === 5} />
       </FlexContainer>
     </FlexContainer>

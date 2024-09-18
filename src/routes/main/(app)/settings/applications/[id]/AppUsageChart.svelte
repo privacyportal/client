@@ -2,16 +2,53 @@
   import { LineChart, Interpolation, easings } from 'chartist';
   import { onMount, onDestroy } from 'svelte';
   import FlexContainer from '$lib/components/common/FlexContainer.svelte';
-  import { addMonthsToTimestamp, getMonthNameFromTS, getMonthStartTS, timestampToSecs } from '$lib/modules/utils';
+  import { addMonthsToTimestamp, getMonthNameFromTS, getMonthStartTS, getSizeUnit, timestampToSecs } from '$lib/modules/utils';
+  import Radio from '$lib/components/common/Radio.svelte';
 
   export let selected;
   export let metrics;
-  $: updateChart(metrics) || selected;
+  let type = 'active_users';
+  let relayMetricsUnit = { label: 'KB', divider: 1024 };
+
+  $: relayMetricsUnit = getSizeUnit(
+    Object.values(metrics.relay_metrics).reduce((max, item) => Math.max(max, item.size['0']), 0)
+  );
+
+  $: updateChart(metrics, type) || selected || relayMetricsUnit;
+
+  const METRICS_CONFIG = {
+    'active_users': {
+      label: 'Active Users',
+      color: '#00729c',
+      selector: (data) => data,
+      tooltipValue: (value) => value === 1 ? '1 user' : `${value} users`,
+      yLabelInterpolationFnc: (value) => `${value}`
+    },
+    'relay_metrics:size': {
+      label: 'Relayed Data',
+      color: '#009c76',
+      selector: (data) => parseFloat((data?.size?.['0'] / relayMetricsUnit.divider).toFixed(2)),
+      tooltipValue: (value) => `${value} ${relayMetricsUnit.label}`,
+      yLabelInterpolationFnc: (value) => value === 0 ? `${value} ${relayMetricsUnit.label}` : `${value}`
+    },
+    'relay_metrics:count': {
+      label: 'Relayed Emails',
+      color: '#959595',
+      selector: (data) => data?.count?.['0'],
+      tooltipValue: (value) => value === 1 ? '1 email' : `${value} emails`,
+      yLabelInterpolationFnc: (value) => `${value}`
+    }
+  };
+
+  const METRICS_OPTIONS = ['active_users', 'relay_metrics:size', 'relay_metrics:count'].map(key => ({
+    label: METRICS_CONFIG[key].label,
+    value: key
+  }));
 
   let element;
   let tooltip;
   let tooltipLabel;
-  let tooltipCountValue;
+  let tooltipValue;
   let tooltipTimer;
   let tooltipSelectedIndex = 0;
   let chart;
@@ -21,40 +58,42 @@
     tooltipSelectedIndex = 0;
   }
 
-  function updateChart(metrics) {
+  function updateChart(metrics, type) {
     if (chart) {
       resetTooltipSelection();
-      chart.update(extractData(metrics));
+      chart.update(extractData(metrics, type));
     }
   }
 
-  function extractData(metrics) {
+  function extractData(metrics, type) {
     let labels = [];
-    let usageData = [];
+    let dataPoints = [];
 
     const monthStartTS = getMonthStartTS();
     for (let monthOffset = -5; monthOffset <= 0; monthOffset++) {
+      const typeKey = type.split(':', 1).pop();
       const monthTS = addMonthsToTimestamp(monthStartTS, monthOffset);
       const label = getMonthNameFromTS(monthTS);
+      const monthTsInSecs = timestampToSecs(monthTS);
       const data = {
         label: getMonthNameFromTS(monthTS, 'long'),
-        count: metrics?.[`${timestampToSecs(monthTS)}`] || 0
+        value: METRICS_CONFIG[type]['selector'](metrics?.[typeKey]?.[`${monthTsInSecs}`]) || 0
       };
 
       labels.push(label);
-      usageData.push({ meta: JSON.stringify(data), value: data.count });
+      dataPoints.push({ meta: JSON.stringify(data), value: data.value });
     }
 
     return {
       labels,
-      series: [usageData]
+      series: [dataPoints]
     };
   }
 
   onMount(() => {
     chart = new LineChart(
       element,
-      extractData(metrics),
+      extractData(metrics, type),
       {
         low: 0,
         showArea: true,
@@ -66,7 +105,8 @@
           showGrid: true
         },
         axisY: {
-          onlyInteger: true
+          onlyInteger: true,
+          labelInterpolationFnc: (value) => METRICS_CONFIG[type].yLabelInterpolationFnc(value)
         },
         lineSmooth: Interpolation.simple({ divisor: 0 })
       },
@@ -117,9 +157,9 @@
           tooltip.style.top = data.y > 50 ? data.y - 60 + 'px' : data.y + 5 + 'px';
           tooltip.style.left = data.x > 200 ? data.x - 85 + 'px' : data.x + 5 + 'px';
 
-          const { label, count } = JSON.parse(data.meta);
+          const { label, value } = JSON.parse(data.meta);
           tooltipLabel = label;
-          tooltipCountValue = count === 1 ? '1 user' : `${count} users`;
+          tooltipValue = METRICS_CONFIG[type]['tooltipValue'](value);
 
           tooltipSelectedIndex = data.index + 1;
           tooltipTimer = setTimeout(() => (tooltipSelectedIndex = 0), 5000);
@@ -135,18 +175,13 @@
   });
 </script>
 
-<FlexContainer column>
-  <FlexContainer width="100%" align_items="center" justify_content="center" gap="0.5rem">
-    <FlexContainer width="auto" padding="0px 0px 1rem 0px" align_items="flex-start" gap="0.3rem" rounded nohover>
-      <div class="legend-color-container legend-series-a" />
-      <span class="legend-label oneline mono xs">Active Users</span>
-    </FlexContainer>
-  </FlexContainer>
-  <div bind:this={element} data-selected={tooltipSelectedIndex} class="chart">
+<FlexContainer column align_items="center" gap="0.5rem">
+  <Radio width="auto" margin="0.5rem 0 0 0" options={METRICS_OPTIONS} bind:selected={type} xs />
+  <div bind:this={element} data-selected={tooltipSelectedIndex} class="chart" style:--series-color={METRICS_CONFIG[type].color} >
     <div bind:this={tooltip} class="chartist-tooltip">
       <FlexContainer column padding="0.5rem">
         <span class="xs"><strong>{tooltipLabel}</strong></span>
-        <span class="xs">{tooltipCountValue}</span>
+        <span class="xs">{tooltipValue}</span>
       </FlexContainer>
     </div>
   </div></FlexContainer
@@ -177,16 +212,6 @@
     visibility: visible;
     opacity: 1;
     transition: ease-in-out 0.3s;
-  }
-
-  .legend-color-container {
-    width: 45px;
-    height: 15px;
-  }
-
-  .legend-series-a {
-    border: 3px solid #00729ccc;
-    background: #00729c33;
   }
 
   :global(.ct-chart-line) {
@@ -237,14 +262,9 @@
     fill-opacity: 0.2;
   }
 
-  :global(.series-a-hidden .ct-series-a, .series-b-hidden .ct-series-b) {
-    opacity: 0;
-    visibility: hidden;
-    transition: ease-in-out 0.8s;
-  }
-
   :global(.ct-series-a .ct-point, .ct-series-a .ct-line) {
-    stroke: #00729ccc;
+    stroke: var(--series-color);
+    stroke-opacity: 0.8;
   }
 
   :global(.ct-area) {
@@ -252,16 +272,7 @@
   }
 
   :global(.ct-series-a .ct-area) {
-    fill: #00729c;
-    fill-opacity: 0.2;
-  }
-
-  :global(.ct-series-b .ct-point, .ct-series-b .ct-line) {
-    stroke: #009c76aa;
-  }
-
-  :global(.ct-series-b .ct-area) {
-    fill: #009c76;
+    fill: var(--series-color);
     fill-opacity: 0.2;
   }
 

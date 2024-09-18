@@ -27,5 +27,5 @@
   <h6 class="no-margin">{application.name}</h6>
   <span class="xs">{new URL(application.url).host}</span>
 </FlexContainer>
-<Tag><span class="xs">{activeUsers} Active Users</span></Tag>
+<Tag><span class="xs">{activeUsers === 1 ? '1 Active User' : `${activeUsers} Active Users`}</span></Tag>
 <Button on:click={gotoPage(`/settings/applications/${application.id}`)} padding="2px 7px" blendin rounded><EditIcon dimension="20px" /></Button>

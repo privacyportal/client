@@ -113,3 +113,9 @@ export function getMonthNameFromTS(timestamp, style = 'short') {
 export function timestampToSecs(timestamp) {
   return Math.floor(timestamp / 1000);
 }
+
+export function getSizeUnit(size) {
+  if (size > 1073741824) return { label: 'GB', divider: 1073741824 };
+  if (size > 1048576) return { label: 'MB', divider: 1048576 };
+  return { label: 'KB', divider: 1024 };
+}

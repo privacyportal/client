@@ -1,18 +1,20 @@
 <script>
   import FlexContainer from '$lib/components/common/FlexContainer.svelte';
 
+  export let width = undefined;
   export let margin = undefined;
   export let options;
   export let selected = options?.[0]?.value;
+  export let xs = false;
 
   const slugify = (str = '') => str.toLowerCase().replace(/ /g, '-').replace(/\./g, '');
 </script>
 
-<FlexContainer {margin} rounded border nooverflow>
+<FlexContainer {width} {margin} rounded border nooverflow>
   {#each options as { value, label }}
     <input type="radio" id={slugify(label)} {value} bind:group={selected} />
     <div class="button">
-      <label class="oneline" for={slugify(label)}>{label}</label>
+      <label class="oneline" class:xs for={slugify(label)}>{label}</label>
     </div>
   {/each}
 </FlexContainer>
@@ -23,6 +25,11 @@
     width: 100%;
     font-size: 0.9rem;
     padding: 0.3rem 0px;
+  }
+
+  label.xs {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.3rem;
   }
 
   input:not(:checked) + .button > label:hover {

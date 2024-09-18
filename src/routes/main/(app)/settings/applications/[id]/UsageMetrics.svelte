@@ -4,7 +4,8 @@
 
   export let loading;
   export let selected;
-  export let active_users;
+  export let active_users = {};
+  export let relay_metrics = {};
 </script>
 
 <FlexContainer column bgColor="var(--new-layer-color)" padding="1.5rem" gap="0.7rem" rounded mobileScale onlymobile alwaysDisplay={selected}>
@@ -16,10 +17,8 @@
   <FlexContainer column gap="0.15rem">
     {#if loading}
       <span class="sm">Loading...</span>
-    {:else if !active_users}
-      <span class="sm">No activity in the past 6 months.</span>
     {:else}
-      <AppUsageChart metrics={active_users} {selected} />
+      <AppUsageChart metrics={{ active_users, relay_metrics }} {selected} />
     {/if}
   </FlexContainer>
 </FlexContainer>
