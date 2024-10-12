@@ -162,8 +162,8 @@
               </li>
               <li>
                 <span class="sm"
-                  ><strong>Deactivate</strong> or <strong>Delete</strong> the Privacy Alias that is receiving spam. These addresses should be used for single purpose and deactivating them should only
-                  impact the spamming party.</span
+                  ><strong>Deactivate</strong> or <strong>Delete</strong> the Privacy Alias that is receiving spam. These addresses should be used for single purpose and deactivating them should only impact
+                  the spamming party.</span
                 >
               </li>
             </ul>
@@ -190,8 +190,7 @@
               >
             </GridContainer>
           {:else if supportTopic === 'rejection'}
-            <span class="sm"
-              >Some websites mistakenly or purposefully reject Privacy Aliases. You could reach out to their support to let them know why this is bad for your privacy and security.</span
+            <span class="sm">Some websites mistakenly or purposefully reject Privacy Aliases. You could reach out to their support to let them know why this is bad for your privacy and security.</span
             >
             <Button height="25px" on:click={gotoExt(`mailto:?subject=${EMAIL_SUBJECT_DRAFT}&body=${EMAIL_BODY_DRAFT}`)} xsmall border rounded>Create Draft</Button>
             <hr class="divider sm-v-margin" />

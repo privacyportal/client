@@ -660,3 +660,28 @@ export async function deleteOAuthAppDomain({ id, domain_id }) {
     path: `/oauth/apps/${id}/domains/${domain_id}`
   });
 }
+
+export async function patchOAuthAppSubscriptionPlan({ id, name, mau, billing }) {
+  return await sendRequest({
+    method: 'PATCH',
+    path: `/oauth/apps/${id}/plan`,
+    data: {
+      name,
+      mau,
+      billing
+    }
+  });
+}
+
+export async function submitOAuthAppFreedomTechApplication({ id, type, focus, repo, description }) {
+  return await sendRequest({
+    method: 'POST',
+    path: `/oauth/apps/${id}/freedom-tech-application/new`,
+    data: {
+      type,
+      focus,
+      ...(repo && { repo }),
+      description
+    }
+  });
+}

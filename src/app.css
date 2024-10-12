@@ -48,6 +48,7 @@
   --primary-color: #00729c;
   --positive-color: #009c76;
   --info-color: #9c7f00;
+  --info-contrasted-color: #7b6502;
   --warning-color: #e08a00;
   --danger-color: #b73933;
   --translucent-primary-color: #00729c33;
@@ -255,6 +256,18 @@ span.sm {
 
 .align-self-end {
   align-self: end;
+}
+
+.align-self-center {
+  align-self: center;
+}
+
+.center {
+  text-align: center;
+}
+
+.full-row {
+  grid-column: 1 / -1;
 }
 
 .gridline {

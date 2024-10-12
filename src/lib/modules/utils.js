@@ -119,3 +119,22 @@ export function getSizeUnit(size) {
   if (size > 1048576) return { label: 'MB', divider: 1048576 };
   return { label: 'KB', divider: 1024 };
 }
+
+export function fmtFloat(value, decimals = 1) {
+  return parseFloat(value.toFixed(decimals));
+}
+
+export function fmtPrice(value, decimals = 0, unit = '€') {
+  return `${unit}${(value / 100.0).toFixed(decimals)}`;
+}
+
+export function fmtCount(count) {
+  if (count > 1e9) return `${fmtFloat(count / 1e9)}G`;
+  if (count > 1e6) return `${fmtFloat(count / 1e6)}M`;
+  if (count > 1e3) return `${fmtFloat(count / 1e3)}K`;
+  return count;
+}
+
+export function capitalize(input) {
+  return input?.[0].toUpperCase() + input?.slice(1);
+}
