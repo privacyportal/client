@@ -10,18 +10,16 @@
   let type = 'active_users';
   let relayMetricsUnit = { label: 'KB', divider: 1024 };
 
-  $: relayMetricsUnit = getSizeUnit(
-    Object.values(metrics.relay_metrics).reduce((max, item) => Math.max(max, item.size['0']), 0)
-  );
+  $: relayMetricsUnit = getSizeUnit(Object.values(metrics.relay_metrics).reduce((max, item) => Math.max(max, item.size['0']), 0));
 
   $: updateChart(metrics, type) || selected || relayMetricsUnit;
 
   const METRICS_CONFIG = {
-    'active_users': {
+    active_users: {
       label: 'Active Users',
       color: '#00729c',
       selector: (data) => data,
-      tooltipValue: (value) => value === 1 ? '1 user' : `${value} users`,
+      tooltipValue: (value) => (value === 1 ? '1 user' : `${value} users`),
       yLabelInterpolationFnc: (value) => `${value}`
     },
     'relay_metrics:size': {
@@ -29,18 +27,18 @@
       color: '#009c76',
       selector: (data) => parseFloat((data?.size?.['0'] / relayMetricsUnit.divider).toFixed(2)),
       tooltipValue: (value) => `${value} ${relayMetricsUnit.label}`,
-      yLabelInterpolationFnc: (value) => value === 0 ? `${value} ${relayMetricsUnit.label}` : `${value}`
+      yLabelInterpolationFnc: (value) => (value === 0 ? `${value} ${relayMetricsUnit.label}` : `${value}`)
     },
     'relay_metrics:count': {
       label: 'Relayed Emails',
       color: '#959595',
       selector: (data) => data?.count?.['0'],
-      tooltipValue: (value) => value === 1 ? '1 email' : `${value} emails`,
+      tooltipValue: (value) => (value === 1 ? '1 email' : `${value} emails`),
       yLabelInterpolationFnc: (value) => `${value}`
     }
   };
 
-  const METRICS_OPTIONS = ['active_users', 'relay_metrics:size', 'relay_metrics:count'].map(key => ({
+  const METRICS_OPTIONS = ['active_users', 'relay_metrics:size', 'relay_metrics:count'].map((key) => ({
     label: METRICS_CONFIG[key].label,
     value: key
   }));
@@ -177,7 +175,7 @@
 
 <FlexContainer column align_items="center" gap="0.5rem">
   <Radio width="auto" margin="0.5rem 0 0 0" options={METRICS_OPTIONS} bind:selected={type} xs />
-  <div bind:this={element} data-selected={tooltipSelectedIndex} class="chart" style:--series-color={METRICS_CONFIG[type].color} >
+  <div bind:this={element} data-selected={tooltipSelectedIndex} class="chart" style:--series-color={METRICS_CONFIG[type].color}>
     <div bind:this={tooltip} class="chartist-tooltip">
       <FlexContainer column padding="0.5rem">
         <span class="xs"><strong>{tooltipLabel}</strong></span>

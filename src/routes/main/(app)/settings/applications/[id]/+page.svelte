@@ -20,6 +20,9 @@
   import MailRelay from './MailRelay.svelte';
   import Toggle from '$lib/components/common/Toggle.svelte';
   import UsageMetrics from './UsageMetrics.svelte';
+  import SubscriptionPlan from './SubscriptionPlan.svelte';
+
+  const SECTIONS = ['App Info', 'Credentials', 'Access Management', 'Mail Relay', 'Subscription Plan', 'Usage Metrics', 'Danger Zone'];
 
   let loading = false;
 
@@ -33,6 +36,8 @@
   let pkce;
   let active_users;
   let relay_metrics;
+  let plan;
+  let fdm_tech;
   let published_at;
   let dirtyCallbackURLs;
   let selectedSection = 0;
@@ -72,6 +77,8 @@
     pkce = data.pkce;
     active_users = data.active_users;
     relay_metrics = data.relay_metrics;
+    plan = data.plan;
+    fdm_tech = data.fdm_tech;
     published_at = data.published_at;
   }
 
@@ -140,65 +147,20 @@
       <h3 class="no-margin oneline">OAuth Application</h3>
 
       <FlexContainer column rounded border nooverflow>
-        <Button
-          on:click={() => {
-            selectedSection = 0;
-          }}
-          flexgrow
-          ascolumn
-          align_items="flex-start"
-          selected={selectedSection === 0}>App Info</Button
-        >
-        <div class="gridline" />
-        <Button
-          on:click={() => {
-            selectedSection = 1;
-          }}
-          flexgrow
-          ascolumn
-          align_items="flex-start"
-          selected={selectedSection === 1}>Credentials</Button
-        >
-        <div class="gridline" />
-        <Button
-          on:click={() => {
-            selectedSection = 2;
-          }}
-          flexgrow
-          ascolumn
-          align_items="flex-start"
-          selected={selectedSection === 2}>Access Management</Button
-        >
-        <div class="gridline" />
-        <Button
-          on:click={() => {
-            selectedSection = 3;
-          }}
-          flexgrow
-          ascolumn
-          align_items="flex-start"
-          selected={selectedSection === 3}>Mail Relay</Button
-        >
-        <div class="gridline" />
-        <Button
-          on:click={() => {
-            selectedSection = 4;
-          }}
-          flexgrow
-          ascolumn
-          align_items="flex-start"
-          selected={selectedSection === 4}>Usage Metrics</Button
-        >
-        <div class="gridline" />
-        <Button
-          on:click={() => {
-            selectedSection = 5;
-          }}
-          flexgrow
-          ascolumn
-          align_items="flex-start"
-          selected={selectedSection === 5}>Danger Zone</Button
-        >
+        {#each SECTIONS as title, index}
+          {#if index > 0}
+            <div class="gridline" />
+          {/if}
+          <Button
+            on:click={() => {
+              selectedSection = index;
+            }}
+            flexgrow
+            ascolumn
+            align_items="flex-start"
+            selected={selectedSection === index}>{title}</Button
+          >
+        {/each}
       </FlexContainer>
     </FlexContainer>
 
@@ -308,8 +270,9 @@
         <Credentials {clientId} {clientSecrets} {loading} selected={selectedSection === 1} />
         <AccessManagement {clientId} bind:published_at {loading} selected={selectedSection === 2} />
         <MailRelay {clientId} {domains} {loading} selected={selectedSection === 3} />
-        <UsageMetrics {active_users} {relay_metrics} bind:published_at {loading} selected={selectedSection === 4} />
-        <DangerZone id={$page.params.id} {name} selected={selectedSection === 5} />
+        <SubscriptionPlan {clientId} {active_users} {relay_metrics} {plan} {fdm_tech} {loading} selected={selectedSection === 4} />
+        <UsageMetrics {active_users} {relay_metrics} bind:published_at {loading} selected={selectedSection === 5} />
+        <DangerZone id={$page.params.id} {name} selected={selectedSection === 6} />
       </FlexContainer>
     </FlexContainer>
   </GridContainer>
