@@ -175,7 +175,7 @@
                   }
                 }}
                 size="12px"
-                disabled={submitting}
+                disabled={submitting || fdmTechProjectType === 'newsletter'}
                 bind:checked={isFdmTechPrivacyProject}
               />
               <span class="sm">Privacy</span>
