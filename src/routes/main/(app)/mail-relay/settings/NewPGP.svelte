@@ -10,6 +10,8 @@
   import { activateProfile, createPGPProfile } from '$lib/modules/requests';
   import { profiles as profilesStore } from '$lib/stores/profiles';
   import AddIcon from '$lib/components/materialIcons/AddIcon.svelte';
+  import { isPublicPGPKey } from '$lib/modules/pgpUtils';
+  import { showSnackbar } from '$lib/stores/snackbar';
 
   export let accountId;
   export let handleClose;
@@ -57,6 +59,14 @@
       activating = false;
     }
   }
+
+  function validatePgpFile(data) {
+    if (!isPublicPGPKey(data)) {
+      showSnackbar({ text: 'File should contain a PGP public key.' });
+      return false;
+    }
+    return true;
+  }
 </script>
 
 <!-- Step 1: Export PGP Public Key -->
@@ -87,7 +97,7 @@
           <FlexContainer column gap="0.5rem">
             <FlexContainer gap="0.5rem" align_items="center" justify_content="space-between">
               <h5 class="no-margin">Submit Key</h5>
-              <FilePicker height="auto" padding="0.1rem 0.5rem 0.1rem 0.3rem" disabled={submitting} accept=".asc" gap="0.1rem" basic rounded bind:content={key}
+              <FilePicker validate={validatePgpFile} readAsText height="auto" padding="0.1rem 0.5rem 0.1rem 0.3rem" disabled={submitting} accept=".asc" gap="0.1rem" basic rounded bind:content={key}
                 ><AddIcon dimension="18px" color="var(--basic-text-color)" /><small>Import</small></FilePicker
               >
             </FlexContainer>

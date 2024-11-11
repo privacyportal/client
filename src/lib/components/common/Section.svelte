@@ -14,12 +14,15 @@
   export let mediumWidth = undefined;
   export let listItem = undefined;
   export let nooverflow = undefined;
+  export let relative = undefined;
+  export let gap = undefined;
 </script>
 
-<FlexContainer column {width} {padding} {height} {textCentered} {listItem} {justify_content} {color} {bgColor} {nooverflow} {border} {rounded}>
-  <div class="wrapper" class:m-width={mediumWidth} style:--align-items={align_items}>
+<FlexContainer column {width} {padding} {height} {textCentered} {listItem} {justify_content} {color} {bgColor} {nooverflow} {border} {rounded} {relative}>
+  <div class="wrapper" class:m-width={mediumWidth} style:--align-items={align_items} style:--gap={gap}>
     <slot />
   </div>
+  <slot name="footer" />
 </FlexContainer>
 
 <style>
@@ -31,6 +34,7 @@
     display: flex;
     flex-direction: column;
     align-items: var(--align-items);
+    gap: var(--gap);
   }
 
   .wrapper.m-width {

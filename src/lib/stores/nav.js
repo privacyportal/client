@@ -19,6 +19,10 @@ const CONFIG = {
   '/unsubscribe': {
     public: true,
     noHeader: true
+  },
+  '/file-sharing/preview': {
+    public: true,
+    noHeader: false
   }
 };
 

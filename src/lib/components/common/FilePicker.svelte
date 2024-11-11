@@ -1,5 +1,5 @@
 <script>
-  import { isPublicPGPKey } from '$lib/modules/pgpUtils';
+  import { fmtSize } from '$lib/modules/utils';
   import { showSnackbar } from '$lib/stores/snackbar';
   import Button from './Button.svelte';
 
@@ -32,21 +32,31 @@
   export let gap = '0.5rem';
   export let globalClass = [];
   export let accept = undefined;
+  export let readAsText = false;
+  export let validate = () => true;
+  export let maxSize = undefined;
 
   let inputElement;
   export let content;
+  export let file;
 
   function handleImport(e) {
     // setting up the reader
-    var reader = new FileReader();
-    reader.readAsText(e.target.files[0], 'UTF-8');
-    reader.onload = (readerEvent) => {
-      if (isPublicPGPKey(readerEvent.target.result)) {
-        content = readerEvent.target.result;
-      } else {
-        return showSnackbar({ text: 'File should contain a PGP public key.' });
-      }
-    };
+    if (maxSize && e.target.files[0].size > maxSize) {
+      showSnackbar({ text: `File size cannot exceed ${fmtSize(maxSize)}` });
+      return;
+    }
+    if (readAsText) {
+      var reader = new FileReader();
+      reader.readAsText(e.target.files[0], 'UTF-8');
+      reader.onload = (readerEvent) => {
+        if (validate(readerEvent.target.result)) {
+          content = readerEvent.target.result;
+        }
+      };
+      return;
+    }
+    file = e.target.files[0];
   }
 </script>
 

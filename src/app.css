@@ -225,6 +225,10 @@ hr.divider.no-margin {
   margin: 0px;
 }
 
+hr.divider.thin {
+  border-width: 0.5px;
+}
+
 .oneline {
   text-overflow: ellipsis;
   white-space: nowrap;
