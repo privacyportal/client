@@ -1,3 +1,4 @@
+const UUID_REGEX = new RegExp('^[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$');
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
@@ -14,7 +15,7 @@ export function formatDate(timestamp, options) {
 }
 
 export function formatDuration(duration, options) {
-  const { daysOnly } = { ...options };
+  const { daysOnly, raw } = { ...options };
 
   let result = [];
   const isFuture = duration >= 0;
@@ -58,6 +59,7 @@ export function formatDuration(duration, options) {
     if (seconds) result.push('less than a minute');
   }
 
+  if (raw) return result.join(' ');
   return isFuture ? `in ${result.join(' ')}` : `${result.join(' ')} ago`;
 }
 
@@ -128,6 +130,11 @@ export function fmtPrice(value, decimals = 0, unit = '€') {
   return `${unit}${(value / 100.0).toFixed(decimals)}`;
 }
 
+export function fmtSize(value, decimals = 0) {
+  const { label, divider } = getSizeUnit(value);
+  return `${(value / divider).toFixed(decimals)}${label}`;
+}
+
 export function fmtCount(count) {
   if (count > 1e9) return `${fmtFloat(count / 1e9)}G`;
   if (count > 1e6) return `${fmtFloat(count / 1e6)}M`;
@@ -137,4 +144,33 @@ export function fmtCount(count) {
 
 export function capitalize(input) {
   return input?.[0].toUpperCase() + input?.slice(1);
+}
+
+export function isValidUUID(input) {
+  return UUID_REGEX.test(input);
+}
+
+export function randomFourDigitsCode() {
+  const min = 0;
+  const max = 9999;
+
+  // Get a random number in the range of 0 to the largest possible integer (2^53 - 1)
+  const randomBuffer = new Uint32Array(1);
+  let randomNumber = window.crypto.getRandomValues(randomBuffer)[0];
+
+  // Now map this number to our desired range, avoiding modulo bias
+  const maxRange = 2 ** 32; // Since we're using Uint32Array, max possible value is 2^32 - 1
+  const remainder = maxRange % max;
+
+  // Keep trying until we get a number that isn't in the biased range
+  for (let attempts = 0; attempts < 20; attempts++) {
+    randomNumber = window.crypto.getRandomValues(randomBuffer)[0];
+    if (randomNumber > remainder) {
+      // we found a safe number
+      return (min + (randomNumber % max)).toString().padStart(4, '0');
+    }
+  }
+
+  // it's very unlikely to reach this point given for a 4 digit max compared to the 32 bits number
+  return (min + (randomNumber % max)).toString().padStart(4, '0');
 }

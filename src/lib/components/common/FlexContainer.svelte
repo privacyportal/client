@@ -26,6 +26,7 @@
   export let nomobile = undefined;
   export let onlymobile = undefined;
   export let alwaysDisplay = undefined;
+  export let relative = undefined;
 
   let paddingMobile = padding
     .split(' ')
@@ -63,6 +64,7 @@
   class:mobile-scale={mobileScale}
   class:zero-flex-shrink={zeroFlexShrink}
   class:alwaysdisplay={alwaysDisplay}
+  class:relative
 >
   <slot />
 </div>
@@ -84,6 +86,10 @@
     max-width: var(--width);
     color: var(--color);
     background-color: var(--bg-color);
+  }
+
+  .relative {
+    position: relative;
   }
 
   .nooverflow {

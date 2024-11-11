@@ -7,8 +7,9 @@ export function parseJwtBody(token) {
   };
 }
 
-export function bufferToBase64(buffer) {
-  return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+export function bufferToBase64(buffer, { url } = { url: false }) {
+  const result = btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+  return url ? base64ToBase64Url(result) : result;
 }
 
 export function base64ToBuffer(string) {

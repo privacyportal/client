@@ -109,8 +109,14 @@
       <FlexContainer column gap="0.5rem">
         <h5 class="no-margin">Mail Relay</h5>
         <FlexContainer column rounded overflowhidden gap="1px">
-          <Button on:click={gotoPage('/mail-relay')} basic>Mail Relay App</Button>
+          <Button on:click={gotoPage('/mail-relay')} basic>Privacy Aliases</Button>
           <Button on:click={gotoPage('/mail-relay/settings')} basic>Relay Settings</Button>
+        </FlexContainer>
+      </FlexContainer>
+      <FlexContainer column gap="0.5rem">
+        <h5 class="no-margin">File Sharing</h5>
+        <FlexContainer column rounded overflowhidden gap="1px">
+          <Button on:click={gotoPage('/file-sharing/sender')} basic>Share PDF</Button>
         </FlexContainer>
       </FlexContainer>
       <FlexContainer column gap="0.5rem">
@@ -158,8 +164,15 @@
           <FlexContainer column gap="0.5rem" padding="0 0 0 0rem">
             <h5 class="no-margin">Mail Relay</h5>
             <FlexContainer column rounded border overflowhidden zeroFlexShrink gap="2px">
-              <Button on:click={closeOnExit(gotoPage('/mail-relay'))} flexgrow ascolumn align_items="flex-start">Mail Relay App</Button>
+              <Button on:click={closeOnExit(gotoPage('/mail-relay'))} flexgrow ascolumn align_items="flex-start">Privacy Aliases</Button>
               <Button on:click={closeOnExit(gotoPage('/mail-relay/settings'))} flexgrow ascolumn align_items="flex-start">Relay Settings</Button>
+            </FlexContainer>
+          </FlexContainer>
+
+          <FlexContainer column gap="0.5rem" padding="0 0 0 0rem">
+            <h5 class="no-margin">File Sharing</h5>
+            <FlexContainer column rounded border overflowhidden zeroFlexShrink gap="2px">
+              <Button on:click={closeOnExit(gotoPage('/file-sharing/sender'))} flexgrow ascolumn align_items="flex-start">Share PDF</Button>
             </FlexContainer>
           </FlexContainer>
 
@@ -261,8 +274,14 @@
                 <FlexContainer column gap="0.5rem">
                   <h4 class="no-margin">Mail Relay</h4>
                   <FlexContainer column rounded overflowhidden gap="1px">
-                    <Button on:click={gotoPage('/mail-relay')} basic>Application</Button>
+                    <Button on:click={gotoPage('/mail-relay')} basic>Privacy Aliases</Button>
                     <Button on:click={gotoPage('/mail-relay/settings')} basic>Relay Settings</Button>
+                  </FlexContainer>
+                </FlexContainer>
+                <FlexContainer column gap="0.5rem">
+                  <h4 class="no-margin">File Sharing</h4>
+                  <FlexContainer column rounded overflowhidden gap="1px">
+                    <Button on:click={gotoPage('/file-sharing/sender')} basic>Share PDF</Button>
                   </FlexContainer>
                 </FlexContainer>
                 <FlexContainer column gap="0.5rem">

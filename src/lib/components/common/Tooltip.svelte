@@ -2,39 +2,45 @@
   export let position = 'top';
   export let text;
   export let small = undefined;
+  export let zIndex = '1';
+  export let height = 'auto';
+  export let width = 'auto';
 </script>
 
-<div class="tooltip">
+<div class="tooltip" style:--height={height} style:--width={width}>
   <slot />
-  <span class="tooltiptext {position}" class:small>{text}</span>
+  <span class="tooltiptext {position}" class:small style:--z-index={zIndex}>{text}</span>
 </div>
 
 <style>
   .tooltip {
     position: relative;
     display: inline-block;
+    height: var(--height);
+    width: var(--width);
   }
 
   .tooltip .tooltiptext {
     visibility: hidden;
     width: 120px;
     background-color: var(--tooltip-color);
+    backdrop-filter: blur(5px);
     color: var(--text-light-opaque-color);
     text-align: center;
-    padding: 5px 0;
+    padding: 5px 3px;
     border-radius: 6px;
     font-size: 0.9rem;
 
     /* Position the tooltip text */
     position: absolute;
-    z-index: 1;
+    z-index: var(--z-index);
     opacity: 0;
     transition: opacity 0.5s;
   }
 
   .tooltip .tooltiptext.right {
-    top: -5px;
-    left: 105%;
+    top: calc(-100% - 5px);
+    left: calc(100% + 5px);
   }
 
   .tooltip .tooltiptext.right::after {
@@ -49,8 +55,8 @@
   }
 
   .tooltip .tooltiptext.left {
-    top: -5px;
-    right: 105%;
+    top: calc(-100% - 5px);
+    right: calc(100% + 5px);
   }
 
   .tooltip .tooltiptext.left::after {

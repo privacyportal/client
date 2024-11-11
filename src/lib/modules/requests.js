@@ -685,3 +685,41 @@ export async function submitOAuthAppFreedomTechApplication({ id, type, focus, re
     }
   });
 }
+
+export async function createFileSharingInvite({ nickname, recipient, address, code }) {
+  return await sendRequest({
+    method: 'POST',
+    path: '/file-sharing/invites/new',
+    data: {
+      ...(nickname && { nickname }),
+      recipient,
+      address,
+      ...(code && { code })
+    }
+  });
+}
+
+export async function getFileSharingInvite({ id, peer_id, token, code }) {
+  return await sendRequest({
+    method: 'POST',
+    path: `/file-sharing/invites/${id}`,
+    data: {
+      peer_id,
+      token,
+      ...(code && { code })
+    }
+  });
+}
+
+export async function createFileSharingSession({ peer_id, token, size, hash }) {
+  return await sendRequest({
+    method: 'POST',
+    path: '/file-sharing/sessions/new',
+    data: {
+      peer_id,
+      size,
+      hash,
+      token
+    }
+  });
+}

@@ -24,6 +24,6 @@ export function createFile(params = {}) {
     ...params
   };
 
-  const blob = new Blob([data], { type });
+  const blob = new Blob(Array.isArray(data) ? data : [data], { type });
   return new File([blob], filename, { type });
 }
