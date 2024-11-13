@@ -48,9 +48,14 @@ export async function handleFileTransferProtocol({ node, peerAddress, expectedSi
         .pipeTo(collectChunksStream)
         .catch((err) => {
           console.error(err);
-          stream.close();
+          stream.close().catch(console.error);
           throw err;
         });
+
+      // try to close stream
+      if (stream?.status === 'open') {
+        await stream.close().catch(console.error);
+      }
 
       const file = createFile({
         filename: 'ephemeral.pdf',

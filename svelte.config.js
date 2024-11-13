@@ -16,7 +16,8 @@ const config = {
     prerender: {},
     csp: {
       directives: {
-        'script-src': ['self']
+        'script-src': ['self'],
+        'frame-ancestors': ['self']
       }
     }
   }

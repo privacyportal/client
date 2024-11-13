@@ -42,7 +42,7 @@
     // console.log('privateKey:', privateKey);
     if (!profile || !profile.pem || !privateKey) throw new Error('Certificate data not found.');
 
-    const pkcs12Worker = new Worker(new URL('../../../../../lib/modules/pki/PKCS12Worker.js', import.meta.url), { type: 'module' });
+    const pkcs12Worker = new Worker(new URL('../../../../../../lib/modules/pki/PKCS12Worker.js', import.meta.url), { type: 'module' });
 
     try {
       const pkcs12Data = await new Promise((resolve, reject) => {
