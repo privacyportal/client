@@ -9,13 +9,14 @@
   import { onMount } from 'svelte';
   import VisibilityOffIcon from '$lib/components/materialIcons/VisibilityOffIcon.svelte';
   import PrintIcon from '$lib/components/materialIcons/PrintIcon.svelte';
-  import { fmtSize, isValidUUID } from '$lib/modules/utils';
+  import { isValidUUID } from '$lib/modules/utils';
   import { page } from '$app/stores';
   import { getFileSharingInvite } from '$lib/modules/requests';
   import FileReceiver from './FileReceiver.svelte';
   import { generateLibp2pPeerId, libp2pIssueToken } from '$lib/modules/p2p/libp2pUtil';
   import { goto } from '$app/navigation';
   import WarningIcon from '$lib/components/materialIcons/WarningIcon.svelte';
+  import { base } from '$app/paths';
 
   let verificationCodeForm;
   let inviteId;
@@ -32,14 +33,24 @@
   let error;
 
   $: if (file && pdfViewer) {
-    pdfViewer.src = URL.createObjectURL(file);
-    // setTimeout(() => {
-    //   pdfViewer.contentWindow.print();
-    // }, 200);
+    if (navigator.pdfViewerEnabled) {
+      pdfViewer.src = URL.createObjectURL(file);
+    } else {
+      pdfViewer.src = `${base}/file-sharing/preview/pdf-viewer`;
+    }
   }
 
   // submit form if code length === 4
   $: code?.length === 4 && fetchInviteInfo().catch(console.error);
+
+  function handleMessage(event) {
+    if (!navigator.pdfViewerEnabled && event.source === pdfViewer.contentWindow && event.data.type === 'loaded') {
+      pdfViewer.contentWindow.postMessage({
+        type: 'to-preview',
+        value: URL.createObjectURL(file)
+      })
+    }
+  }
 
   async function parseInviteId() {
     try {
@@ -97,13 +108,28 @@
     }
   }
 
+  function interceptPrinting(event) {
+    if (
+      event.keyCode === /* P= */ 80 &&
+      (event.ctrlKey || event.metaKey) &&
+      !event.altKey &&
+      (!event.shiftKey || window.chrome || window.opera)
+    ) {
+      pdfViewer.contentWindow.print();
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }
+
   onMount(async () => {
     await parseInviteId();
   });
 </script>
 
+<svelte:window on:message={handleMessage} on:keydown={interceptPrinting}/>
+
 {#if file}
-  <iframe bind:this={pdfViewer} title="PDF document" width="100%" height="100%"> </iframe>
+  <iframe bind:this={pdfViewer} title="PDF document" width="100%" height="100%"></iframe>
 {:else}
   <Section padding="0px 1rem" height="calc(100vh - 50px)" color="var(--text-color)" gap="3rem" textCentered relative>
     <FlexContainer width="auto" column align_items="center" justify_content="center" gap="0.5rem">

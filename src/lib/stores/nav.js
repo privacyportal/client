@@ -23,6 +23,10 @@ const CONFIG = {
   '/file-sharing/preview': {
     public: true,
     noHeader: false
+  },
+  '/file-sharing/preview/pdf-viewer': {
+    public: true,
+    noHeader: true
   }
 };
 

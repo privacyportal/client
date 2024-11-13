@@ -111,7 +111,10 @@
             // compress then transfer
             const compressionStream = new CompressionStream('gzip');
             await stream.sink(file.stream().pipeThrough(compressionStream));
-            // await stream.sink(file.stream());
+            // close stream for writing
+            await stream.closeWrite();
+            // wait 30 seconds before closing the sream
+            await new Promise((resolve) => setTimeout(resolve, 30_000));
             await stream.close();
             transfersCompleted++;
           } finally {
@@ -152,7 +155,7 @@
     } catch (err) {
       console.error(err);
       if (err instanceof CustomError) throw err;
-      throw new CustomError({ message: 'Failed to connection to relay. Please try again.' });
+      throw new CustomError({ message: 'Failed to connect to relay. Please try again.' });
     }
   }
 

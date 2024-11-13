@@ -153,7 +153,7 @@
       <FlexContainer column height="calc(100vh - 50px - 2rem)" padding="0 0 0.5rem 0" justify_content="space-between">
         <FlexContainer column gap="1.5rem">
           <FlexContainer column gap="0.5rem">
-            <h4 class="no-margin">Main Account</h4>
+            <h5 class="no-margin">General Settings</h5>
             <FlexContainer column rounded border overflowhidden zeroFlexShrink gap="2px">
               <Button on:click={closeOnExit(gotoPage('/account'))} flexgrow ascolumn align_items="flex-start">Account</Button>
               <Button on:click={closeOnExit(gotoPage('/settings/security'))} flexgrow ascolumn align_items="flex-start">Security</Button>
