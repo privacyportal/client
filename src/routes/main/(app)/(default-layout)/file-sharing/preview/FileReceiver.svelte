@@ -10,7 +10,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { multiaddr } from '@multiformats/multiaddr';
   import hashFile from '$lib/modules/hashFile';
-  import { displayError } from '$lib/modules/errors';
+  import { CustomError, displayError } from '$lib/modules/errors';
   import { goto } from '$app/navigation';
 
   export let peerId;
@@ -28,8 +28,8 @@
   const FILE_CORRUPTED_ERR = 'File corrupted during transfer. Please try again.';
 
   const RECEIVING_STEPS = [
-    { labels: ['Connecting to server...', 'Connected to server.'], action: connectToRelay },
-    { labels: ['Receiving file from sender...', 'File transfer complete.'], action: receiveFile }
+    { labels: ['Connecting to server...', 'Connected to server.', 'Connection failed'], action: connectToRelay },
+    { labels: ['Receiving file from sender...', 'File transfer complete.', 'File transfer failed'], action: receiveFile }
   ];
 
   async function connectToRelay() {
@@ -76,6 +76,7 @@
       file = receivedFile;
     } catch (err) {
       error = err;
+      throw new CustomError({ message: 'Failed to receive file. Please try again.' })
     }
   }
 
@@ -121,7 +122,7 @@
             <RefreshIcon animated dimension="15px" />
           {/if}
         </div>
-        <span class="sm">{step.labels[0]}</span>
+        <span class="sm">{step.labels[error ? 2 : 0]}</span>
       {/if}
     {/each}
   </GridContainer>
