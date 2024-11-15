@@ -69,7 +69,7 @@ function fflateCommonTransformStream(asyncCompressor) {
       }
     },
     async flush(controller) {
-      return new Promise(resolve => {
+      await new Promise(resolve => {
         // console.log(`[${asyncCompressor.constructor.name}][flush]`);
         try {
           asyncCompressor.push(new Uint8Array(0), resolve);
@@ -77,6 +77,7 @@ function fflateCommonTransformStream(asyncCompressor) {
           controller.error(err);
         }
       });
+      controller.terminate();
     }
   }, new CountQueuingStrategy({ highWaterMark: 1 }), new CountQueuingStrategy({ highWaterMark: 1 }));
 }
