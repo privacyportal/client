@@ -1,4 +1,5 @@
 <script>
+  import '$lib/modules/iterableStreamPolyfill';
   import Button from '$lib/components/common/Button.svelte';
   import FlexContainer from '$lib/components/common/FlexContainer.svelte';
   import GridContainer from '$lib/components/common/GridContainer.svelte';
@@ -113,6 +114,8 @@
             const compressionStream = await createCompressionStream();
             await stream.sink(file.stream().pipeThrough(compressionStream));
             transfersCompleted++;
+          } catch (err) {
+            console.error(err);
           } finally {
             transfersInProgress--;
           }
