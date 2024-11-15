@@ -1,6 +1,6 @@
 {
   "name": "client",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "author": "Privacy Portal",
   "license": "MIT",
   "scripts": {
@@ -44,6 +44,7 @@
     "@privacyportal/ping": "^2.0.15",
     "@types/pvutils": "^1.0.4",
     "chartist": "^1.3.0",
+    "fflate": "^0.8.2",
     "file-saver": "^2.0.5",
     "libp2p": "^2.2.1",
     "pdfjs-dist": "^4.8.69",

@@ -17,6 +17,7 @@
   import Tag from '$lib/components/common/Tag.svelte';
   import { minuteTimer } from '$lib/stores/timers';
   import WarningIcon from '$lib/components/materialIcons/WarningIcon.svelte';
+  import { createCompressionStream } from '$lib/modules/compression/compressionUtils';
 
   const SENDING_STEPS = [
     { labels: ['Analyzing file...', 'File ready for transfer.'], action: prepareFile },
@@ -109,13 +110,8 @@
           try {
             transfersInProgress++;
             // compress then transfer
-            const compressionStream = new CompressionStream('gzip');
+            const compressionStream = await createCompressionStream();
             await stream.sink(file.stream().pipeThrough(compressionStream));
-            // close stream for writing
-            await stream.closeWrite();
-            // wait 30 seconds before closing the sream
-            await new Promise((resolve) => setTimeout(resolve, 30_000));
-            await stream.close();
             transfersCompleted++;
           } finally {
             transfersInProgress--;

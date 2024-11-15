@@ -174,3 +174,8 @@ export function randomFourDigitsCode() {
   // it's very unlikely to reach this point given for a 4 digit max compared to the 32 bits number
   return (min + (randomNumber % max)).toString().padStart(4, '0');
 }
+
+export function typedArrayToArrayBuffer(uintXArray) {
+  if (uintXArray.buffer.byteLength === uintXArray.byteLength) return uintXArray.buffer;
+  return uintXArray.buffer.slice(uintXArray.byteOffset, uintXArray.byteLength + uintXArray.byteOffset);
+}

@@ -1,3 +1,4 @@
+import { createDecompressionStream } from '../compression/compressionUtils';
 import { createFile } from '../export';
 
 export async function handleFileTransferProtocol({ node, peerAddress, expectedSize, resolveConnected }) {
@@ -17,7 +18,7 @@ export async function handleFileTransferProtocol({ node, peerAddress, expectedSi
       const data = [];
       let size = 0;
 
-      const decompressionStream = new DecompressionStream('gzip');
+      const decompressionStream = await createDecompressionStream();
 
       const compressedReadable = new ReadableStream({
         async start(controller) {
