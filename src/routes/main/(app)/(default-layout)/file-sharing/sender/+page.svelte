@@ -17,11 +17,25 @@
   import FileSender from './FileSender.svelte';
   import InfoIcon from '$lib/components/materialIcons/InfoIcon.svelte';
   import Tooltip from '$lib/components/common/Tooltip.svelte';
+  import { CustomError } from '$lib/modules/errors';
+  import hashFile from '$lib/modules/hashFile';
 
   let nickname;
   let recipient;
   let file;
+  let fileHash;
   let sending = false;
+
+  $: prepareFile(file);
+
+  async function prepareFile(file) {
+    try {
+      fileHash = file ? await hashFile(file) : undefined;
+    } catch (err) {
+      console.error('File hashing failed with error:', err);
+      throw new CustomError({ message: 'Unable to prepare file for transfer. Please try again.' });
+    }
+  }
 
   onMount(async () => {});
 </script>
@@ -54,8 +68,8 @@
       </GridContainer>
       <hr class="divider thin no-margin" />
 
-      {#if sending}
-        <FileSender bind:recipient bind:nickname bind:file bind:sending />
+      {#if sending && fileHash}
+        <FileSender bind:recipient bind:nickname bind:file {fileHash} bind:sending />
       {:else}
         <FlexContainer column gap="1.5rem">
           <Form on:submit={() => (sending = true)}>
