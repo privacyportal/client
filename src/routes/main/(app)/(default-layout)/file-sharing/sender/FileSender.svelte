@@ -21,7 +21,6 @@
   import { createCompressionStream } from '$lib/modules/compression/compressionUtils';
 
   const SENDING_STEPS = [
-    { labels: ['Analyzing file...', 'File ready for transfer.'], action: prepareFile },
     { labels: ['Connecting to relay...', 'Connected to relay.'], action: connectToRelay },
     { labels: ['Sending invite to recipient...', 'Invite sent to recipient.'], action: sendInviteToRecipient }
   ];
@@ -31,6 +30,7 @@
   export let nickname;
   export let recipient;
   export let file;
+  export let fileHash;
   export let sending = false;
 
   let stoppingNode = false;
@@ -38,7 +38,6 @@
   let transfersInProgress = 0;
   let transfersCompleted = 0;
   let error;
-  let fileHash;
   let code;
   let sessionExpires;
   let node;
@@ -80,15 +79,6 @@
       hash: fileHash
     });
     return response.data;
-  }
-
-  async function prepareFile() {
-    try {
-      fileHash = await hashFile(file);
-    } catch (err) {
-      console.error('File hashing failed with error:', err);
-      throw new CustomError({ message: 'Unable to prepare file for transfer. Please try again.' });
-    }
   }
 
   async function connectToRelay() {
