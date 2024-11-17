@@ -22,7 +22,8 @@ const CONFIG = {
   },
   '/file-sharing/preview': {
     public: true,
-    noHeader: false
+    noHeader: false,
+    showPrintBtn: true
   },
   '/file-sharing/preview/pdf-viewer': {
     public: true,
@@ -57,6 +58,7 @@ const pathConfigValue = (fullPath, key) => {
 export const logoColor = derived(page, ($page) => pathConfigValue($page.url.pathname, 'logo_color'));
 export const isPublicPage = derived(page, ($page) => pathConfigValue($page.url.pathname, 'public'));
 export const noHeader = derived(page, ($page) => pathConfigValue($page.url.pathname, 'noHeader'));
+export const showPrintButton = derived(page, ($page) => pathConfigValue($page.url.pathname, 'showPrintBtn'));
 
 // mobile back button
 export const navBackButton = writable(null);

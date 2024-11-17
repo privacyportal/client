@@ -17,6 +17,7 @@
   import { goto } from '$app/navigation';
   import WarningIcon from '$lib/components/materialIcons/WarningIcon.svelte';
   import { base } from '$app/paths';
+  import { setPrintHandler } from '$lib/components/common/Header.svelte';
 
   let verificationCodeForm;
   let inviteId;
@@ -33,11 +34,14 @@
   let error;
 
   $: if (file && pdfViewer) {
+    setPrintHandler(triggerPrint);
     if (navigator.pdfViewerEnabled) {
       pdfViewer.src = URL.createObjectURL(file);
     } else {
       pdfViewer.src = `${base}/file-sharing/preview/pdf-viewer`;
     }
+  } else {
+    setPrintHandler(() => {});
   }
 
   // submit form if code length === 4
@@ -115,10 +119,14 @@
       !event.altKey &&
       (!event.shiftKey || window.chrome || window.opera)
     ) {
-      pdfViewer.contentWindow.print();
+      triggerPrint();
       event.preventDefault();
       event.stopImmediatePropagation();
     }
+  }
+
+  function triggerPrint() {
+    pdfViewer.contentWindow.print();
   }
 
   onMount(async () => {

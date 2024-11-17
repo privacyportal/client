@@ -1,8 +1,13 @@
 <script context="module">
   let actionHandler = () => console.log('action button pressed');
+  let printHandler = () => console.log('print button pressed');
 
   export function setNavActionHandler(handler) {
     actionHandler = handler;
+  }
+
+  export function setPrintHandler(handler) {
+    printHandler = handler;
   }
 </script>
 
@@ -23,8 +28,9 @@
   import { LANDING_CLIENT_URL } from '$lib/modules/constants';
   import { gotoExt, gotoPage } from '$lib/modules/routingUtils';
   import { endSession, isDarkMode, isEnhancedProtection, session } from '$lib/stores/account';
-  import { logoColor, navBackButton } from '$lib/stores/nav';
+  import { logoColor, navBackButton, showPrintButton } from '$lib/stores/nav';
   import { getContext, setContext } from 'svelte';
+  import PrintIcon from '../materialIcons/PrintIcon.svelte';
 
   export let isLoginScreen = false;
 
@@ -36,13 +42,16 @@
   let canInstallApp = false;
   let deferredInstallPrompt;
 
-  setContext('nav-button-action', {
+  setContext('nav-button-actions', {
     handleNavButtonAction: () => {
       actionHandler();
+    },
+    handlePrintButtonAction: () => {
+      printHandler();
     }
   });
 
-  const { handleNavButtonAction } = getContext('nav-button-action');
+  const { handleNavButtonAction, handlePrintButtonAction } = getContext('nav-button-actions');
 
   function closeOnExit(next) {
     return () => {
@@ -229,10 +238,19 @@
       <div class="nav-section">
         {#if isLoginScreen}
           <FlexContainer width="100%" align_items="center" justify_content="flex-end" nomobile gap="1rem">
-            <a href={`${LANDING_CLIENT_URL}`}><span>Home</span></a>
-            <a href={`${LANDING_CLIENT_URL}/support`}><span>Support</span></a>
-            <a href={`${LANDING_CLIENT_URL}/blog`}><span>Blog</span></a>
-            <a href={`${LANDING_CLIENT_URL}/privacy`}><span>Privacy</span></a>
+            {#if $showPrintButton}
+              <Button on:click={handlePrintButtonAction} width="auto" height="auto" padding="0.2rem 0.3rem" light border rounded>
+                <FlexContainer align_items="center" gap="0.2rem">
+                  <PrintIcon dimension="24px" />
+                  <span>Print</span>
+                </FlexContainer>
+              </Button>
+            {:else}
+              <a href={`${LANDING_CLIENT_URL}`}><span>Home</span></a>
+              <a href={`${LANDING_CLIENT_URL}/support`}><span>Support</span></a>
+              <a href={`${LANDING_CLIENT_URL}/blog`}><span>Blog</span></a>
+              <a href={`${LANDING_CLIENT_URL}/privacy`}><span>Privacy</span></a>
+            {/if}
             {#if canInstallApp && deferredInstallPrompt}
               <Button on:click={handleAppInstall} width="auto" height="auto" padding="0.2rem 0.3rem" primary light border rounded>
                 <span class="sm">Install App</span>
@@ -244,30 +262,52 @@
             {/if}
           </FlexContainer>
 
-          {#if canInstallApp && deferredInstallPrompt}
-            <FlexContainer width="100%" align_items="center" justify_content="flex-end" onlymobile>
+          <FlexContainer width="100%" align_items="center" justify_content="flex-end" onlymobile>
+            {#if $showPrintButton}
+              <Button on:click={handlePrintButtonAction} width="auto" height="auto" padding="0.2rem 0.3rem" light border rounded>
+                <FlexContainer align_items="center" gap="0.2rem">
+                  <PrintIcon dimension="24px" />
+                  <span>Print</span>
+                </FlexContainer>
+              </Button>
+            {/if}
+            {#if canInstallApp && deferredInstallPrompt}
               <Button on:click={handleAppInstall} height="auto" padding="0.2rem 0" flexgrow primary light border rounded>
                 <span class="sm">Install App</span>
               </Button>
-            </FlexContainer>
-          {:else}
-            <FlexContainer width="100%" align_items="center" justify_content="flex-end" onlymobile>
+            {:else}
               <Button on:click={() => (installInstructionsModalOpened = true)} globalClass={['ios-browser']} height="auto" padding="0.2rem 0" flexgrow primary light border rounded>
                 <span class="sm">Install App</span>
               </Button>
-            </FlexContainer>
-          {/if}
+            {/if}
+          </FlexContainer>
         {:else}
           <div class="menu-group no-mobile" />
         {/if}
         <div class="menu-group">
           {#if $session?.email}
+            {#if $showPrintButton}
+              <Button on:click={handlePrintButtonAction} height="28px" margin="0px" padding="0px 0.3rem" border rounded mobile>
+                <FlexContainer align_items="center" gap="0.2rem">
+                  <PrintIcon dimension="24px" />
+                  <span>Print</span>
+                </FlexContainer>
+              </Button>
+            {/if}
             <Button on:click={() => (appsModalOpened = true)} height="28px" margin="0px" padding="0" border rounded mobile>
               <AppsIcon dimension="24px" />
             </Button>
             <Button on:click={() => (accountModalOpened = true)} height="28px" margin="0px" padding="0" border rounded mobile>
               <PersonIcon dimension="24px" />
             </Button>
+            {#if $showPrintButton}
+              <Button on:click={handlePrintButtonAction} height="34px" margin="0px" padding="0px 0.3rem" border rounded noMobile>
+                <FlexContainer align_items="center" gap="0.2rem">
+                  <PrintIcon dimension="24px" />
+                  <span>Print</span>
+                </FlexContainer>
+              </Button>
+            {/if}
             <Dropdown height="34px" noMobile>
               <AppsIcon dimension="24px" slot="title" />
               <FlexContainer column gap="1.5rem">
