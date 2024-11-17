@@ -241,8 +241,8 @@
             {#if $showPrintButton}
               <Button on:click={handlePrintButtonAction} width="auto" height="auto" padding="0.2rem 0.3rem" light border rounded>
                 <FlexContainer align_items="center" gap="0.2rem">
-                  <PrintIcon dimension="24px" />
-                  <span>Print</span>
+                  <PrintIcon dimension="16px" />
+                  <span class="sm">Print</span>
                 </FlexContainer>
               </Button>
             {:else}
@@ -262,12 +262,12 @@
             {/if}
           </FlexContainer>
 
-          <FlexContainer width="100%" align_items="center" justify_content="flex-end" onlymobile>
+          <FlexContainer width="100%" align_items="center" justify_content="flex-end" gap="0.5rem" onlymobile>
             {#if $showPrintButton}
               <Button on:click={handlePrintButtonAction} width="auto" height="auto" padding="0.2rem 0.3rem" light border rounded>
                 <FlexContainer align_items="center" gap="0.2rem">
-                  <PrintIcon dimension="24px" />
-                  <span>Print</span>
+                  <PrintIcon dimension="16px" />
+                  <span class="sm">Print</span>
                 </FlexContainer>
               </Button>
             {/if}
