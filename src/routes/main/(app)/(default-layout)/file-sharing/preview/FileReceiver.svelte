@@ -16,7 +16,6 @@
   export let peerId;
   export let turnCredentials;
   export let remoteAddress;
-  export let receiving;
   export let file;
   export let fileHash;
   export let fileSize;
@@ -36,14 +35,16 @@
     console.log('connectToRelay');
     return new Promise(async (resolveConnected, rejectConnected) => {
       try {
-        const session = {
-          turn: turnCredentials
-        };
-        node = await startLibp2pNode({
-          peerId,
-          session,
-          isSender: false
-        });
+        if (!node) {
+          const session = {
+            turn: turnCredentials
+          };
+          node = await startLibp2pNode({
+            peerId,
+            session,
+            isSender: false
+          });
+        }
 
         file_promise = handleFileTransferProtocol({
           node,
@@ -80,12 +81,13 @@
     }
   }
 
-  async function handleClose() {
+  async function handleClose({ redirect } = { redirect: true }) {
     receivingStep = 0;
     file = undefined;
     error = undefined;
-    receiving = false;
-    goto('/');
+    if (redirect) {
+      goto('/');
+    }
   }
 
   async function handleCancellation() {
@@ -93,7 +95,12 @@
     handleClose();
   }
 
-  onMount(async () => {
+  async function handleRetry() {
+    handleClose({ redirect: false });
+    await connectAndFetch();
+  }
+
+  async function connectAndFetch() {
     try {
       for (receivingStep = 0; receivingStep < RECEIVING_STEPS.length; receivingStep++) {
         await RECEIVING_STEPS[receivingStep].action();
@@ -101,6 +108,10 @@
     } catch (err) {
       displayError(err);
     }
+  }
+
+  onMount(async () => {
+    await connectAndFetch();
   });
 
   onDestroy(async () => {
@@ -126,6 +137,9 @@
       {/if}
     {/each}
   </GridContainer>
+  {#if error}
+    <Button on:click={handleRetry} width="100%" basic rounded>Retry</Button>
+  {/if}
   {#if receivingStep === RECEIVING_STEPS.length}
     <Button on:click={handleClose} width="100%" basic rounded>Close</Button>
   {:else}
