@@ -32,10 +32,11 @@
   let file;
   let pdfViewer;
   let error;
+  let useNativePdfViewer = true;
 
   $: if (file && pdfViewer) {
     setPrintHandler(triggerPrint);
-    if (navigator.pdfViewerEnabled) {
+    if (useNativePdfViewer) {
       pdfViewer.src = URL.createObjectURL(file);
     } else {
       pdfViewer.src = `${base}/file-sharing/preview/pdf-viewer`;
@@ -48,7 +49,7 @@
   $: code?.length === 4 && fetchInviteInfo().catch(console.error);
 
   function handleMessage(event) {
-    if (!navigator.pdfViewerEnabled && event.source === pdfViewer.contentWindow && event.data.type === 'loaded') {
+    if (!useNativePdfViewer && event.source === pdfViewer.contentWindow && event.data.type === 'loaded') {
       pdfViewer.contentWindow.postMessage({
         type: 'to-preview',
         value: URL.createObjectURL(file)
@@ -129,7 +130,13 @@
     pdfViewer.contentWindow.print();
   }
 
+  function isAppleMobile() {
+    return CSS.supports('-webkit-touch-callout', 'none') && window.matchMedia('(display-mode: browser)').matches;
+  }
+
   onMount(async () => {
+    // Apple mobile devices use a restricted PDF Viewer inside iFrames
+    useNativePdfViewer = navigator.pdfViewerEnabled && !isAppleMobile();
     await parseInviteId();
   });
 </script>
