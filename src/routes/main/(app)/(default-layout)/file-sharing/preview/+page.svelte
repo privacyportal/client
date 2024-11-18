@@ -6,7 +6,7 @@
   import Section from '$lib/components/common/Section.svelte';
   import LockIcon from '$lib/components/materialIcons/LockIcon.svelte';
   import Logo from '$lib/components/svg/Logo.svelte';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import VisibilityOffIcon from '$lib/components/materialIcons/VisibilityOffIcon.svelte';
   import PrintIcon from '$lib/components/materialIcons/PrintIcon.svelte';
   import { isValidUUID } from '$lib/modules/utils';
@@ -18,6 +18,7 @@
   import WarningIcon from '$lib/components/materialIcons/WarningIcon.svelte';
   import { base } from '$app/paths';
   import { setPrintHandler } from '$lib/components/common/Header.svelte';
+  import Button from '$lib/components/common/Button.svelte';
 
   let verificationCodeForm;
   let inviteId;
@@ -28,16 +29,19 @@
   let turnCredentials;
   let fileHash;
   let fileSize;
-  let receiving = false;
   let file;
+  let fileURL;
   let pdfViewer;
   let error;
   let useNativePdfViewer = true;
+  let shouldOpenInNewTab = false;
 
   $: if (file && pdfViewer) {
+    fileURL = URL.createObjectURL(file);
     setPrintHandler(triggerPrint);
+
     if (useNativePdfViewer) {
-      pdfViewer.src = URL.createObjectURL(file);
+      pdfViewer.src = fileURL;
     } else {
       pdfViewer.src = `${base}/file-sharing/preview/pdf-viewer`;
     }
@@ -52,7 +56,7 @@
     if (!useNativePdfViewer && event.source === pdfViewer.contentWindow && event.data.type === 'loaded') {
       pdfViewer.contentWindow.postMessage({
         type: 'to-preview',
-        value: URL.createObjectURL(file)
+        value: fileURL
       })
     }
   }
@@ -134,17 +138,39 @@
     return CSS.supports('-webkit-touch-callout', 'none') && window.matchMedia('(display-mode: browser)').matches;
   }
 
+  function handleOpenFile() {
+    if (fileURL) {
+      window.open(fileURL, '_blank');
+    }
+  }
+
   onMount(async () => {
-    // Apple mobile devices use a restricted PDF Viewer inside iFrames
-    useNativePdfViewer = navigator.pdfViewerEnabled && !isAppleMobile();
+    useNativePdfViewer = navigator.pdfViewerEnabled;
+    // Apple mobile devices use a restricted PDF Viewer inside iFrames (also memory is limited)
+    shouldOpenInNewTab = isAppleMobile();
     await parseInviteId();
   });
+
+  onDestroy(async () => {
+    if (fileURL) {
+      URL.revokeObjectURL(fileURL);
+    }
+  })
 </script>
 
 <svelte:window on:message={handleMessage} on:keydown={interceptPrinting}/>
 
 {#if file}
-  <iframe bind:this={pdfViewer} title="PDF document" width="100%" height="100%"></iframe>
+  <FlexContainer width="100%" height="100%" relative>
+    <iframe bind:this={pdfViewer} title="PDF document" width="100%" height="100%"></iframe>
+    {#if shouldOpenInNewTab}
+      <div class="pdf-overlay">
+        <FlexContainer height="100%" column align_items="center" justify_content="center" bgColor="var(--disabled-layer-color)" gap="3rem" width="auto">
+          <Button on:click={handleOpenFile} padding='0px 0.5rem' primary rounded>Open File</Button>
+        </FlexContainer>
+      </div>
+    {/if}
+  </FlexContainer>
 {:else}
   <Section padding="0px 1rem" height="calc(100vh - 50px)" color="var(--text-color)" gap="3rem" textCentered relative>
     <FlexContainer width="auto" column align_items="center" justify_content="center" gap="0.5rem">
@@ -159,7 +185,7 @@
             <h3 class="no-margin">{error.message}</h3>
           </GridContainer>
         {:else if remoteAddress}
-          <FileReceiver {peerId} {remoteAddress} {turnCredentials} {fileHash} {fileSize} bind:receiving bind:file />
+          <FileReceiver {peerId} {remoteAddress} {turnCredentials} {fileHash} {fileSize} bind:file />
         {:else if !loading}
           <FlexContainer column gap="1.5rem">
             <Form bind:element={verificationCodeForm} on:submit={fetchInviteInfo}>
@@ -224,5 +250,12 @@
     position: absolute;
     bottom: 0;
     width: calc(100% - 2rem);
+  }
+
+  .pdf-overlay {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 100%;
   }
 </style>

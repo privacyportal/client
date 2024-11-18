@@ -12,7 +12,7 @@
   import WarningIcon from '$lib/components/materialIcons/WarningIcon.svelte';
 
   const DEFAULT_SCALE_VALUE = "auto";
-  const MAX_IMAGE_SIZE = 30 * 1024 * 1024;
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
   const WORKER_SRC = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url);
 
