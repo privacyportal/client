@@ -1,4 +1,4 @@
-import '$lib/modules/iterableStreamPolyfill';
+import '$lib/modules/polyfills/asyncIterableStreamPolyfill';
 import { sha256 } from '@noble/hashes/sha2';
 import { bytesToHex as toHex } from '@noble/hashes/utils';
 

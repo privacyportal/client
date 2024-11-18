@@ -1,5 +1,5 @@
 <script>
-  import '$lib/modules/iterableStreamPolyfill';
+  import '$lib/modules/polyfills/asyncIterableStreamPolyfill';
   import Button from '$lib/components/common/Button.svelte';
   import FlexContainer from '$lib/components/common/FlexContainer.svelte';
   import GridContainer from '$lib/components/common/GridContainer.svelte';
@@ -14,11 +14,11 @@
   import { CustomError, displayError } from '$lib/modules/errors';
   import { session } from '$lib/stores/account';
   import { formatDuration, randomFourDigitsCode, writeValueToClipboard } from '$lib/modules/utils';
-  import hashFile from '$lib/modules/hashFile';
   import Tag from '$lib/components/common/Tag.svelte';
   import { minuteTimer } from '$lib/stores/timers';
   import WarningIcon from '$lib/components/materialIcons/WarningIcon.svelte';
   import { createCompressionStream } from '$lib/modules/compression/compressionUtils';
+  import { ORIGIN_DOMAIN } from '$lib/modules/constants';
 
   const SENDING_STEPS = [
     { labels: ['Connecting to relay...', 'Connected to relay.'], action: connectToRelay },
@@ -32,6 +32,7 @@
   export let file;
   export let fileHash;
   export let sending = false;
+  export let inviteURL;
 
   let stoppingNode = false;
   let sendingStep = 0;
@@ -152,12 +153,14 @@
     try {
       // generate 4 digits code
       let generatedCode = randomFourDigitsCode();
-      await createFileSharingInvite({
+      const response = await createFileSharingInvite({
         nickname,
         recipient,
         address,
         code: generatedCode
       });
+
+      inviteURL = `https://app.${ORIGIN_DOMAIN}/file-sharing/preview?id=${response.data?.id}`
 
       // display code
       code = generatedCode;
@@ -175,6 +178,7 @@
     sending = false;
     file = undefined;
     sessionExpires = undefined;
+    inviteURL = undefined;
     transfersInProgress = 0;
     transfersCompleted = 0;
   }
@@ -197,7 +201,10 @@
   });
 
   onDestroy(async () => {
-    if (node) await stopNode(node).catch(console.error);
+    if (node) {
+      await stopNode(node).catch(console.error);
+      node = undefined;
+    }
   });
 </script>
 
