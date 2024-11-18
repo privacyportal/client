@@ -17,7 +17,9 @@ const config = {
     csp: {
       directives: {
         'script-src': ['self'],
-        'frame-ancestors': ['self']
+        'frame-ancestors': ['self'],
+        'frame-src': ['self', 'blob:'],
+        'object-src': ['self', 'blob:']
       }
     }
   }

@@ -264,10 +264,9 @@
 
           <FlexContainer width="100%" align_items="center" justify_content="flex-end" gap="0.5rem" onlymobile>
             {#if $showPrintButton}
-              <Button on:click={handlePrintButtonAction} width="auto" height="auto" padding="0.2rem 0.3rem" light border rounded>
+              <Button on:click={handlePrintButtonAction} width="auto" height="auto" padding="0.2rem" light border rounded>
                 <FlexContainer align_items="center" gap="0.2rem">
                   <PrintIcon dimension="16px" />
-                  <span class="sm">Print</span>
                 </FlexContainer>
               </Button>
             {/if}

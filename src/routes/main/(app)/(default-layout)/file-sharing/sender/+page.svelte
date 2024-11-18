@@ -19,11 +19,13 @@
   import Tooltip from '$lib/components/common/Tooltip.svelte';
   import { CustomError } from '$lib/modules/errors';
   import hashFile from '$lib/modules/hashFile';
+  import QrCode from '$lib/components/common/QrCode.svelte';
 
   let nickname;
   let recipient;
   let file;
   let fileHash;
+  let inviteURL;
   let sending = false;
 
   $: prepareFile(file);
@@ -46,15 +48,21 @@
       <h1 class="no-margin">File Sharing</h1>
     </FlexContainer>
     <FlexContainer column align_items="center" justify_content="center" bgColor="var(--new-layer-color)" gap="0px" rounded>
-      <GridContainer align_items="center" template_columns="30% 1fr" gap="0px">
-        <FlexContainer width="100%" align_items="center" justify_content="center" column gap="0.5rem" relative>
-          <LargeFileIcon dimension="100%" />
-          <div class="overlay">
-            <FlexContainer height="100%" column align_items="center" justify_content="center">
-              <span class="sm"><strong>PDF</strong></span>
-            </FlexContainer>
+      <GridContainer align_items="center" template_columns="40% 1fr" gap="0px">
+        {#if inviteURL}
+          <div>
+            <QrCode bind:value={inviteURL} />
           </div>
-        </FlexContainer>
+        {:else}
+          <FlexContainer width="100%" align_items="center" justify_content="center" column gap="0.5rem" relative>
+            <LargeFileIcon dimension="100%" />
+            <div class="overlay">
+              <FlexContainer height="100%" column align_items="center" justify_content="center">
+                <span class="sm"><strong>PDF</strong></span>
+              </FlexContainer>
+            </div>
+          </FlexContainer>
+        {/if}
         <GridContainer template_columns="1fr" padding="0px 1rem 0px 0px" gap="0.5rem">
           <FlexContainer column align_items="start" justify_content="flex-start" gap="0.2rem">
             <span class="sm mono oneline">{file.name}</span>
@@ -69,7 +77,7 @@
       <hr class="divider thin no-margin" />
 
       {#if sending && fileHash}
-        <FileSender bind:recipient bind:nickname bind:file {fileHash} bind:sending />
+        <FileSender bind:recipient bind:nickname bind:file {fileHash} bind:sending bind:inviteURL />
       {:else}
         <FlexContainer column gap="1.5rem">
           <Form on:submit={() => (sending = true)}>
