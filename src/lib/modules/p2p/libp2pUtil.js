@@ -88,9 +88,6 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
     ],
     connectionGater: {
       denyInboundConnection: (connection) => {
-        // do not accept inbound connections in receiver mode
-        if (!isSender) return true;
-
         // only accept inbound connections from the relay in sender mode
 
         // accept inbound webrtc connections from peer /webrtc/p2p/<peerId>
@@ -113,6 +110,12 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
         // only accept outbound connections through the relay
         // both sender and receiver use it to-reconnect in case the connection drops
 
+        // accept outbound webrtc connections to peer /webrtc/p2p/<peerId>
+        const protoNames = connection.remoteAddr.protoNames();
+        if (protoNames.length === 2 && protoNames[0] === 'webrtc' && protoNames[1] === 'p2p') {
+          return false;
+        }
+
         // accept outbound relayed websocket connections for signaling
         try {
           const { address } = connection.remoteAddr.nodeAddress();
@@ -124,8 +127,8 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
         }
       },
       denyInboundEncryptedConnection: () => {
-        // do not accept inbound connections in receiver mode
-        return !isSender;
+        // both sender and receiver require accepting inbound encrypted connections
+        return false;
       },
       denyOutboundEncryptedConnection: () => {
         // both sender and receiver require establishing outbound encrypted connections
@@ -136,9 +139,6 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
         return true;
       },
       denyInboundUpgradedConnection: async (_, connection) => {
-        // do not accept inbound upgraded connections in receiver mode
-        if (!isSender) return true;
-
         // accept inbound upgraded webrtc connections from peer /webrtc/p2p/<peerId>
         const protoNames = connection.remoteAddr.protoNames();
         if (protoNames.length === 2 && protoNames[0] === 'webrtc' && protoNames[1] === 'p2p') {
@@ -160,12 +160,12 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
         return false;
       },
       denyOutboundRelayedConnection: () => {
-        // do not accept outbound relayed connections in sender mode
-        return isSender;
+        // both sender and receiver require establishing outbound relayed connections
+        return false;
       },
       denyInboundRelayedConnection: () => {
-        // do not accept inbound relayed connections in receiver mode
-        return !isSender;
+        // both sender and receiver require accepting inbound relayed connections
+        return false;
       },
       denyDialMultiaddr: (ma) => {
         console.debug('denyDialMultiaddr:', ma, '=> false');
