@@ -7,9 +7,10 @@
   export let maxWidth = '95vw';
   export let open = false;
   export let header = false;
+  export let ignoreOutsideClicks = false;
 
   function handleExit() {
-    if (open) {
+    if (open && !ignoreOutsideClicks) {
       console.log('handleExit');
       open = false;
     }
