@@ -13,7 +13,7 @@
   import { KEEP_ALIVE } from '@libp2p/interface';
   import { CustomError, displayError } from '$lib/modules/errors';
   import { session } from '$lib/stores/account';
-  import { formatDuration, randomFourDigitsCode, writeValueToClipboard } from '$lib/modules/utils';
+  import { formatDuration, randomFourDigitsCode, retryOnFailure, writeValueToClipboard } from '$lib/modules/utils';
   import Tag from '$lib/components/common/Tag.svelte';
   import { minuteTimer } from '$lib/stores/timers';
   import WarningIcon from '$lib/components/materialIcons/WarningIcon.svelte';
@@ -22,7 +22,7 @@
 
   const SENDING_STEPS = [
     { labels: ['Connecting to relay...', 'Connected to relay.'], action: connectToRelay },
-    { labels: ['Sending invite to recipient...', 'Invite sent to recipient.'], action: sendInviteToRecipient }
+    { labels: ['Sending invite to recipient...', 'Invite sent to recipient.'], action: sendInviteToRecipient, retries: 3 }
   ];
 
   const RELAY_ADDRESS = '/dns4/p2p-relay-1.privacyportal.org/tcp/443/wss';
@@ -160,7 +160,7 @@
         code: generatedCode
       });
 
-      inviteURL = `https://app.${ORIGIN_DOMAIN}/file-sharing/preview?id=${response.data?.id}`
+      inviteURL = `https://app.${ORIGIN_DOMAIN}/file-sharing/preview?id=${response.data?.id}`;
 
       // display code
       code = generatedCode;
@@ -192,7 +192,8 @@
   onMount(async () => {
     try {
       for (sendingStep = 0; sendingStep < SENDING_STEPS.length; sendingStep++) {
-        await SENDING_STEPS[sendingStep].action();
+        const { action, retries } = SENDING_STEPS[sendingStep];
+        await retryOnFailure(action, retries ?? 1);
       }
     } catch (err) {
       error = err;

@@ -77,6 +77,7 @@
       file = receivedFile;
     } catch (err) {
       error = err;
+      console.error(err);
       throw new CustomError({ message: 'Failed to receive file. Please try again.' })
     }
   }

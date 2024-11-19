@@ -179,3 +179,17 @@ export function typedArrayToArrayBuffer(uintXArray) {
   if (uintXArray.buffer.byteLength === uintXArray.byteLength) return uintXArray.buffer;
   return uintXArray.buffer.slice(uintXArray.byteOffset, uintXArray.byteLength + uintXArray.byteOffset);
 }
+
+export async function retryOnFailure (action, maxRetryCount) {
+  let lastError;
+  for (let i=0; i<maxRetryCount; i++) {
+    try {
+      // delay retry by 100ms * retry number
+      await new Promise(resolve => setTimeout(resolve, i * 100));
+      return await action();
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError;
+}
