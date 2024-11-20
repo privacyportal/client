@@ -11,6 +11,8 @@ const CACHE = `cache-${version}`;
 // List of assets to precache
 const ASSETS = [...build, ...files];
 
+const SHARE_TARGET_PATH_REGEX = new RegExp('^/share-target/?$');
+
 // Cache all assets on install
 self.addEventListener('install', (event) => {
   // Create a new cache and add all files to it
@@ -40,7 +42,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   // handle web share target
-  if (event.request.method === 'POST' && url.pathname === '/share-target') {
+  if (event.request.method === 'POST' && SHARE_TARGET_PATH_REGEX.test(url.pathname)) {
     return event.respondWith(
       (async () => {
         const formData = await fetchEvent.request.formData();
