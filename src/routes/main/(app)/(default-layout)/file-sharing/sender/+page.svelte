@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { page } from '$app/stores';
   import Button from '$lib/components/common/Button.svelte';
   import FlexContainer from '$lib/components/common/FlexContainer.svelte';
   import Form from '$lib/components/common/Form.svelte';
@@ -39,7 +40,24 @@
     }
   }
 
-  onMount(async () => {});
+  async function handleShareTarget() {
+    if ($page.url.searchParams.has('share-target')) {
+      const keys = await caches.keys();
+      const fsCache = await caches.open(
+        keys.filter((key) => key.endsWith('file-sharing'))[0],
+      );
+      const pdfFile = await fsCache.match('pdf-file');
+      if (pdfFile) {
+        const blob = await pdfFile.blob();
+        await fsCache.delete('pdf-file');
+        file = new File([blob], 'ephemeral.pdf', { type: 'application/pdf' });
+      }
+    }
+  }
+
+  onMount(async () => {
+    await handleShareTarget();
+  });
 </script>
 
 {#if file}
