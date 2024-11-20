@@ -43,7 +43,11 @@
   function handleImport(e) {
     // setting up the reader
     if (maxSize && e.target.files[0].size > maxSize) {
-      showSnackbar({ text: `File size cannot exceed ${fmtSize(maxSize)}` });
+      showSnackbar({ text: `File size cannot exceed ${fmtSize(maxSize)}.` });
+      return;
+    }
+    if (accept === 'application/pdf' && e.target.files[0].type !== accept) {
+      showSnackbar({ text: `Please select a PDF file.` });
       return;
     }
     if (readAsText) {
