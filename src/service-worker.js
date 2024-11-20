@@ -42,10 +42,10 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   // handle web share target
-  if (event.request.method === 'POST' && SHARE_TARGET_PATH_REGEX.test(url.pathname)) {
+  if (request.method === 'POST' && SHARE_TARGET_PATH_REGEX.test(url.pathname)) {
     return event.respondWith(
       (async () => {
-        const formData = await fetchEvent.request.formData();
+        const formData = await request.formData();
         if (formData.has('pdfFile')) {
           // handle file as a target for file-sharing
           const file = formData.get('pdfFile');
