@@ -48,9 +48,7 @@ self.addEventListener('fetch', (event) => {
           // handle file as a target for file-sharing
           try {
             const file = formData.get('pdfFile');
-            const keys = await caches.keys();
-            let fsCacheName = keys.find(key => key.endsWith('file-sharing'))?.[0] || `${CACHE}-file-sharing`;
-            const fsCache = await caches.open(fsCacheName);
+            const fsCache = await caches.open(`${CACHE}-file-sharing`);
             await fsCache.put('pdf-file', new Response(file));
           } catch (err) {
             console.error(err);
