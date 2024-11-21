@@ -18,7 +18,7 @@
   import FileSender from './FileSender.svelte';
   import InfoIcon from '$lib/components/materialIcons/InfoIcon.svelte';
   import Tooltip from '$lib/components/common/Tooltip.svelte';
-  import { CustomError } from '$lib/modules/errors';
+  import { CustomError, displayError } from '$lib/modules/errors';
   import hashFile from '$lib/modules/hashFile';
   import QrCode from '$lib/components/common/QrCode.svelte';
 
@@ -44,14 +44,14 @@
   async function handleShareTarget() {
     if ($page.url.searchParams.has('share-target')) {
       const keys = await caches.keys();
-      const fsCacheName = keys.filter((key) => key.endsWith('file-sharing'))[0];
+      const fsCacheName = keys.filter((key) => key.endsWith('file-sharing')).sort().pop();
       if (fsCacheName) {
         const fsCache = await caches.open(fsCacheName);
         const pdfFile = await fsCache.match('pdf-file');
         if (pdfFile) {
           const blob = await pdfFile.blob();
           await fsCache.delete('pdf-file');
-          file = new File([blob], 'ephemeral.pdf', { type: 'application/pdf' });
+          file = new File([blob], 'ephemeral.pdf', { type: blob.type });
         }
       }
     }
@@ -63,6 +63,7 @@
       await handleShareTarget();
     } catch (err) {
       console.error(err);
+      displayError(err);
     } finally {
       loading = false;
     }
