@@ -107,25 +107,31 @@
       --ring-2-stroke-extra-opacity: 0;
       --ring-3-fill-extra-opacity: 0;
     }
-    10% {
-      --ring-1-fill-extra-opacity: -0.05;
-      --ring-2-fill-extra-opacity: 0;
-      --ring-2-stroke-extra-opacity: 0;
-      --ring-3-fill-extra-opacity: 0;
-    }
     20% {
-      --ring-1-fill-extra-opacity: 0;
-      --ring-2-fill-extra-opacity: -0.05;
-      --ring-2-stroke-extra-opacity: -0.05;
+      --ring-1-fill-extra-opacity: -0.05;
+      --ring-2-fill-extra-opacity: -0.02;
+      --ring-2-stroke-extra-opacity: 0;
       --ring-3-fill-extra-opacity: 0;
     }
-    30% {
+    35% {
+      --ring-1-fill-extra-opacity: 0.02;
+      --ring-2-fill-extra-opacity: -0.05;
+      --ring-2-stroke-extra-opacity: -0.02;
+      --ring-3-fill-extra-opacity: 0;
+    }
+    45% {
+      --ring-1-fill-extra-opacity: 0;
+      --ring-2-fill-extra-opacity: -0.02;
+      --ring-2-stroke-extra-opacity: -0.05;
+      --ring-3-fill-extra-opacity: -0.02;
+    }
+    60% {
       --ring-1-fill-extra-opacity: 0;
       --ring-2-fill-extra-opacity: 0;
-      --ring-2-stroke-extra-opacity: 0;
+      --ring-2-stroke-extra-opacity: -0.02;
       --ring-3-fill-extra-opacity: -0.05;
     }
-    40% {
+    80% {
       --ring-1-fill-extra-opacity: 0;
       --ring-2-fill-extra-opacity: 0;
       --ring-2-stroke-extra-opacity: 0;

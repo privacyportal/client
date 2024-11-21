@@ -14,6 +14,9 @@ const config = {
     },
     outDir: PROJECT ? `.svelte-kit-${PROJECT}` : '.svelte-kit-main',
     prerender: {},
+    serviceWorker: {
+      register: true
+    },
     csp: {
       directives: {
         'script-src': ['self'],

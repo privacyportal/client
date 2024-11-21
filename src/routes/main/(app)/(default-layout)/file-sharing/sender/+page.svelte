@@ -28,6 +28,7 @@
   let fileHash;
   let inviteURL;
   let sending = false;
+  let loading = true;
 
   $: prepareFile(file);
 
@@ -43,20 +44,29 @@
   async function handleShareTarget() {
     if ($page.url.searchParams.has('share-target')) {
       const keys = await caches.keys();
-      const fsCache = await caches.open(
-        keys.filter((key) => key.endsWith('file-sharing'))[0],
-      );
-      const pdfFile = await fsCache.match('pdf-file');
-      if (pdfFile) {
-        const blob = await pdfFile.blob();
-        await fsCache.delete('pdf-file');
-        file = new File([blob], 'ephemeral.pdf', { type: 'application/pdf' });
+      const fsCacheName = keys.filter((key) => key.endsWith('file-sharing'))[0];
+      if (fsCacheName) {
+        const fsCache = await caches.open(fsCacheName);
+        const pdfFile = await fsCache.match('pdf-file');
+        if (pdfFile) {
+          const blob = await pdfFile.blob();
+          await fsCache.delete('pdf-file');
+          file = new File([blob], 'ephemeral.pdf', { type: 'application/pdf' });
+        }
       }
     }
   }
 
   onMount(async () => {
-    await handleShareTarget();
+    try {
+      loading = true;
+      await handleShareTarget();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      loading = false;
+    }
+    
   });
 </script>
 
@@ -128,39 +138,41 @@
     <FlexContainer width="auto" column align_items="center" justify_content="space-between">
       <FlexContainer column align_items="center" justify_content="center" gap="1rem" width="auto">
         <FlexContainer width="auto" column align_items="center" justify_content="center" gap="0.5rem">
-          <Logo dimension="8rem" color="var(--primary-color)" opacity="1" />
+          <Logo dimension="8rem" color="var(--primary-color)" opacity="1" animated={loading} />
           <h4 class="no-margin unselectable">File Sharing</h4>
           <span class="sm unselectable">Your personal info remains private.</span>
         </FlexContainer>
-        <br />
-        <FlexContainer width="auto" column gap="1.5rem">
-          <FilePicker
-            maxSize={isEnhancedProtection ? 30 * 1048476 : 1048476}
-            width="100%"
-            height="auto"
-            padding="0.1rem 0.5rem 0.1rem 0.3rem"
-            disabled={sending}
-            accept="application/pdf"
-            gap="0.1rem"
-            basic
-            border
-            rounded
-            bind:file
-          >
-            <FlexContainer column gap="0.3rem" padding="0.5rem 1rem">
-              <FlexContainer align_items="center" justify_content="center" gap="0.3rem">
-                <strong><small>Select PDF File</small></strong>
+        {#if !loading}
+          <br />
+          <FlexContainer width="auto" column gap="1.5rem">
+            <FilePicker
+              maxSize={isEnhancedProtection ? 30 * 1048476 : 1048476}
+              width="100%"
+              height="auto"
+              padding="0.1rem 0.5rem 0.1rem 0.3rem"
+              disabled={sending}
+              accept="application/pdf"
+              gap="0.1rem"
+              basic
+              border
+              rounded
+              bind:file
+            >
+              <FlexContainer column gap="0.3rem" padding="0.5rem 1rem">
+                <FlexContainer align_items="center" justify_content="center" gap="0.3rem">
+                  <strong><small>Select PDF File</small></strong>
+                </FlexContainer>
+                {#if isEnhancedProtection}
+                  <span class="xs">Size cannot exceed 30MB.</span>
+                {:else}
+                  <span class="xs">Size cannot exceed 1MB with Basic Protection.</span>
+                {/if}
               </FlexContainer>
-              {#if isEnhancedProtection}
-                <span class="xs">Size cannot exceed 30MB.</span>
-              {:else}
-                <span class="xs">Size cannot exceed 1MB with Basic Protection.</span>
-              {/if}
-            </FlexContainer>
-          </FilePicker>
+            </FilePicker>
 
-          <span class="xs">For better privacy, use password protected PDFs.</span>
-        </FlexContainer>
+            <span class="xs">For better privacy, use password protected PDFs.</span>
+          </FlexContainer>
+        {/if}
       </FlexContainer>
     </FlexContainer>
 
