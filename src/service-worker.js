@@ -46,15 +46,17 @@ self.addEventListener('fetch', (event) => {
         const formData = await request.formData();
         if (formData.has('pdfFile')) {
           // handle file as a target for file-sharing
+          const searchParams = new URLSearchParams();
+          searchParams.append('share-target', "");
           try {
             const file = formData.get('pdfFile');
             const fsCache = await caches.open(`${CACHE}-file-sharing`);
             await fsCache.put('pdf-file', new Response(file));
           } catch (err) {
             console.error(err);
-            // In case of error, redirect anyway to file-sharing
+            searchParams.append('err', err.message);
           }
-          return Response.redirect(`${location.origin}/file-sharing/sender?share-target`, 303);
+          return Response.redirect(`${location.origin}/file-sharing/sender?${searchParams.toString()}`, 303);
         } else {
           // handle Mail Relay alias creation by sharing urls / text
           const searchParams = new URLSearchParams();

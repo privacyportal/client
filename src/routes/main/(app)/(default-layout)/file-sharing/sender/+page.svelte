@@ -18,9 +18,15 @@
   import FileSender from './FileSender.svelte';
   import InfoIcon from '$lib/components/materialIcons/InfoIcon.svelte';
   import Tooltip from '$lib/components/common/Tooltip.svelte';
-  import { CustomError, displayError } from '$lib/modules/errors';
+  import { CustomError, DEFAULT_ERROR_MESSAGE, displayError } from '$lib/modules/errors';
   import hashFile from '$lib/modules/hashFile';
   import QrCode from '$lib/components/common/QrCode.svelte';
+
+  const MAX_ERR_MSG_LENGTH = 300;
+  const MAX_FILE_SIZE = {
+    enhanced: 30 * 1048476,
+    basic: 1048476
+  }
 
   let nickname;
   let recipient;
@@ -41,17 +47,31 @@
     }
   }
 
+  function checkErrorMessage(message) {
+    // remove all unsafe characters (very strict)
+    return (message && message.replaceAll(/[^a-zA-Z0-9 \-_]/g, '').substring(0, MAX_ERR_MSG_LENGTH)) || DEFAULT_ERROR_MESSAGE;
+  }
+
   async function handleShareTarget() {
     if ($page.url.searchParams.has('share-target')) {
-      const keys = await caches.keys();
-      const fsCacheName = keys.filter((key) => key.endsWith('file-sharing')).sort().pop();
-      if (fsCacheName) {
-        const fsCache = await caches.open(fsCacheName);
-        const pdfFile = await fsCache.match('pdf-file');
-        if (pdfFile) {
-          const blob = await pdfFile.blob();
-          await fsCache.delete('pdf-file');
-          file = new File([blob], 'ephemeral.pdf', { type: blob.type });
+      if ($page.url.searchParams.has('err')) {
+        throw new CustomError({ message: checkErrorMessage($page.url.searchParams.get('err')) })
+      } else {
+        const keys = await caches.keys();
+        const fsCacheName = keys.filter((key) => key.endsWith('file-sharing')).sort().pop();
+        if (fsCacheName) {
+          const fsCache = await caches.open(fsCacheName);
+          const cachedFile = await fsCache.match('pdf-file');
+          if (cachedFile) {
+            const blob = await cachedFile.blob();
+            await fsCache.delete('pdf-file');
+            const pdfFile = new File([blob], 'ephemeral.pdf', { type: blob.type });
+            const maxFileSize = isEnhancedProtection ? MAX_FILE_SIZE.enhanced : MAX_FILE_SIZE.basic;
+            if (pdfFile.size > maxFileSize) {
+              throw new CustomError({ message: `File size cannot exceed ${fmtSize(maxFileSize)}.${isEnhancedProtection ? '' : ' Please upgrade to share larger files.'}` })
+            }
+            file = pdfFile;
+          }
         }
       }
     }
@@ -147,7 +167,7 @@
           <br />
           <FlexContainer width="auto" column gap="1.5rem">
             <FilePicker
-              maxSize={isEnhancedProtection ? 30 * 1048476 : 1048476}
+              maxSize={isEnhancedProtection ? MAX_FILE_SIZE.enhanced : MAX_FILE_SIZE.basic}
               width="100%"
               height="auto"
               padding="0.1rem 0.5rem 0.1rem 0.3rem"
