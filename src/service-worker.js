@@ -11,8 +11,6 @@ const CACHE = `cache-${version}`;
 // List of assets to precache
 const ASSETS = [...build, ...files];
 
-const SHARE_TARGET_PATH_REGEX = new RegExp('^/share-target/?$');
-
 // Cache all assets on install
 self.addEventListener('install', (event) => {
   // Create a new cache and add all files to it
@@ -42,27 +40,32 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   // handle web share target
-  if (request.method === 'POST' && SHARE_TARGET_PATH_REGEX.test(url.pathname)) {
+  if (request.method === 'POST' && url.pathname.startsWith('/share-target')) {
     return event.respondWith(
       (async () => {
         const formData = await request.formData();
         if (formData.has('pdfFile')) {
           // handle file as a target for file-sharing
-          const file = formData.get('pdfFile');
-          const keys = await caches.keys();
-          let fsCacheName = keys.find(key => key.endsWith('file-sharing'))?.[0] || `${CACHE}-file-sharing`;
-          const fsCache = await caches.open(fsCacheName);
-          await fsCache.put('pdf-file', new Response(file));
-          return Response.redirect('/file-sharing/sender?share-target', 303);
+          try {
+            const file = formData.get('pdfFile');
+            const keys = await caches.keys();
+            let fsCacheName = keys.find(key => key.endsWith('file-sharing'))?.[0] || `${CACHE}-file-sharing`;
+            const fsCache = await caches.open(fsCacheName);
+            await fsCache.put('pdf-file', new Response(file));
+          } catch (err) {
+            console.error(err);
+            // In case of error, redirect anyway to file-sharing
+          }
+          return Response.redirect(`${location.origin}/file-sharing/sender?share-target`, 303);
         } else {
           // handle Mail Relay alias creation by sharing urls / text
-          const redirectURL = new URL('/mail-relay');
+          const searchParams = new URLSearchParams();
           for (const key of ['title', 'text', 'url']) {
             if (formData.has(key)) {
-              redirectURL.searchParams.append(key, formData.get(key));
+              searchParams.append(key, formData.get(key));
             }
           }
-          return Response.redirect(redirectURL, 303);
+          return Response.redirect(`${location.origin}/mail-relay?${searchParams.toString()}`, 303);
         }
       })(),
     );
