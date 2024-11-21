@@ -13,6 +13,9 @@ const ASSETS = [...build, ...files];
 
 // Cache all assets on install
 self.addEventListener('install', (event) => {
+  // do not wait to become the active service worker
+  self.skipWaiting();
+
   // Create a new cache and add all files to it
   async function addFilesToCache() {
 		const cache = await caches.open(CACHE);

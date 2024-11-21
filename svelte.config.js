@@ -15,7 +15,7 @@ const config = {
     outDir: PROJECT ? `.svelte-kit-${PROJECT}` : '.svelte-kit-main',
     prerender: {},
     serviceWorker: {
-      register: true
+      register: !PROJECT || (PROJECT === 'main')
     },
     csp: {
       directives: {

@@ -58,7 +58,7 @@
         throw new CustomError({ message: checkErrorMessage($page.url.searchParams.get('err')) })
       } else {
         const keys = await caches.keys();
-        const fsCacheName = keys.filter((key) => key.endsWith('file-sharing')).sort().pop();
+        const fsCacheName = keys.filter((key) => key.includes('file-sharing')).sort().pop();
         if (fsCacheName) {
           const fsCache = await caches.open(fsCacheName);
           const cachedFile = await fsCache.match('pdf-file');
