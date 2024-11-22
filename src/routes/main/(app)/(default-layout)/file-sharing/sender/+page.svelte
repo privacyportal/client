@@ -61,7 +61,7 @@
         const fsCacheName = keys.filter((key) => key.includes('file-sharing')).sort().pop();
         if (fsCacheName) {
           const fsCache = await caches.open(fsCacheName);
-          const cachedFile = await fsCache.match('pdf-file');
+          const cachedFile = await fsCache.match('/pdf-file');
           if (cachedFile) {
             const blob = await cachedFile.blob();
             await fsCache.delete('pdf-file');
