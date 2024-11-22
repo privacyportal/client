@@ -12,6 +12,7 @@
   import hashFile from '$lib/modules/hashFile';
   import { CustomError, displayError } from '$lib/modules/errors';
   import { goto } from '$app/navigation';
+  import { releaseScreenWakeLock, requestScreenWakeLock } from '$lib/modules/screenWakeLock';
 
   export let peerId;
   export let turnCredentials;
@@ -23,6 +24,7 @@
   let node;
   let file_promise;
   let error;
+  let wakeLock;
 
   const FILE_CORRUPTED_ERR = 'File corrupted during transfer. Please try again.';
 
@@ -103,11 +105,14 @@
 
   async function connectAndFetch() {
     try {
+      wakeLock = await requestScreenWakeLock();
       for (receivingStep = 0; receivingStep < RECEIVING_STEPS.length; receivingStep++) {
         await RECEIVING_STEPS[receivingStep].action();
       }
     } catch (err) {
       displayError(err);
+    } finally {
+      wakeLock = await releaseScreenWakeLock(wakeLock);
     }
   }
 
@@ -116,6 +121,7 @@
   });
 
   onDestroy(async () => {
+    await releaseScreenWakeLock(wakeLock);
     if (node) await stopNode(node).catch(console.error);
   });
 </script>
