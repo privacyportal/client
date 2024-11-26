@@ -1,7 +1,7 @@
 import { createDecompressionStream } from '../compression/compressionUtils';
 import { createFile } from '../export';
 
-export async function handleFileTransferProtocol({ node, peerAddress, expectedSize, resolveConnected }) {
+export async function handleFileTransferProtocol({ node, peerAddress, expectedSize, resolveConnected, fileTransferProgress=undefined }) {
   return new Promise(async (resolve, reject) => {
     try {
       console.log('dialProtocol:', peerAddress.toString());
@@ -37,6 +37,9 @@ export async function handleFileTransferProtocol({ node, peerAddress, expectedSi
             size += chunk.byteLength;
             if (size > expectedSize) {
               throw new Error('File corrupted during transfer. Please try again.');
+            }
+            if (fileTransferProgress) {
+              fileTransferProgress.set(Math.round(100 * size / expectedSize));
             }
           }
           // Collect each chunk in the array

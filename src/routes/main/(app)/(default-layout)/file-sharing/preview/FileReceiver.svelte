@@ -13,6 +13,7 @@
   import { CustomError, displayError } from '$lib/modules/errors';
   import { goto } from '$app/navigation';
   import { releaseScreenWakeLock, requestScreenWakeLock } from '$lib/modules/screenWakeLock';
+  import { fileTransferProgress } from '$lib/stores/pdfPreview';
 
   export let peerId;
   export let turnCredentials;
@@ -30,7 +31,7 @@
 
   const RECEIVING_STEPS = [
     { labels: ['Connecting to server...', 'Connected to server.', 'Connection failed'], action: connectToRelay },
-    { labels: ['Receiving file from sender...', 'File transfer complete.', 'File transfer failed'], action: receiveFile }
+    { labels: ['Receiving file from sender...', 'File transfer complete.', 'File transfer failed'], action: receiveFile, showProgress: true }
   ];
 
   async function connectToRelay() {
@@ -52,7 +53,8 @@
           node,
           peerAddress: multiaddr(remoteAddress),
           expectedSize: fileSize,
-          resolveConnected
+          resolveConnected,
+          fileTransferProgress
         });
 
         node.addEventListener('self:peer:update', () => {
@@ -105,6 +107,7 @@
 
   async function connectAndFetch() {
     try {
+      fileTransferProgress.set(0);
       wakeLock = await requestScreenWakeLock();
       for (receivingStep = 0; receivingStep < RECEIVING_STEPS.length; receivingStep++) {
         await RECEIVING_STEPS[receivingStep].action();
@@ -141,6 +144,13 @@
           {/if}
         </div>
         <span class="sm">{step.labels[error ? 2 : 0]}</span>
+        {#if step?.showProgress}
+          <span></span>
+          <FlexContainer gap="0.5rem">
+            <progress value={$fileTransferProgress} max="100"></progress>
+            <span class='sm'>{$fileTransferProgress}%</span>
+          </FlexContainer>
+        {/if}
       {/if}
     {/each}
   </GridContainer>
