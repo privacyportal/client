@@ -19,6 +19,7 @@
   import WarningIcon from '$lib/components/materialIcons/WarningIcon.svelte';
   import { createCompressionStream } from '$lib/modules/compression/compressionUtils';
   import { ORIGIN_DOMAIN } from '$lib/modules/constants';
+  import { createFixedSizeMessageTransform } from '$lib/modules/p2p/streamsUtil';
 
   const SENDING_STEPS = [
     { labels: ['Connecting to relay...', 'Connected to relay.'], action: connectToRelay },
@@ -103,7 +104,8 @@
             transfersInProgress++;
             // compress then transfer
             const compressionStream = await createCompressionStream();
-            await stream.sink(file.stream().pipeThrough(compressionStream));
+            const fixedSizeMessageTransform = createFixedSizeMessageTransform();
+            await stream.sink(file.stream().pipeThrough(compressionStream).pipeThrough(fixedSizeMessageTransform));
             transfersCompleted++;
           } catch (err) {
             console.error(err);
@@ -185,8 +187,15 @@
 
   async function handleCancellation() {
     stoppingNode = true;
-    await stopNode().catch(console.error);
+    await closeConnectionsAndStopNode();
     handleClose();
+  }
+
+  async function closeConnectionsAndStopNode() {
+    if (node) {
+      await stopNode(node).catch(console.error);
+      node = undefined;
+    }
   }
 
   onMount(async () => {
@@ -202,12 +211,11 @@
   });
 
   onDestroy(async () => {
-    if (node) {
-      await stopNode(node).catch(console.error);
-      node = undefined;
-    }
+    await closeConnectionsAndStopNode();
   });
 </script>
+
+<svelte:window on:beforeunload={closeConnectionsAndStopNode} />
 
 <FlexContainer column align_items="center" justify_content="center" padding="0.5rem" gap="0.5rem">
   <GridContainer width="100%" align_items="center" justify_items="start" template_columns="15px auto" padding="0.5rem" gap="0.3rem">
