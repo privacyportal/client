@@ -31,12 +31,12 @@ export async function handleFileTransferProtocol({ node, peerAddress, expectedSi
       });
 
       const collectChunksStream = new WritableStream({
-        write(chunk) {
+        write(chunk, controller) {
           // verify compressed data does not exceed the expectedSize (pre-compression)
           if (expectedSize !== undefined) {
             size += chunk.byteLength;
             if (size > expectedSize) {
-              throw new Error('File corrupted during transfer. Please try again.');
+              controller.error(new Error('File corrupted during transfer. Please try again.'));
             }
             if (fileTransferProgress) {
               fileTransferProgress.set(Math.round(100 * size / expectedSize));
@@ -44,6 +44,11 @@ export async function handleFileTransferProtocol({ node, peerAddress, expectedSi
           }
           // Collect each chunk in the array
           data.push(chunk);
+        },
+        close() {
+          if (expectedSize !== undefined && size !== expectedSize) {
+            throw new Error('File corrupted during transfer. Please try again.');
+          }
         }
       });
 
