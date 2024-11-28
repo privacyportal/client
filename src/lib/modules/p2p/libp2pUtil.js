@@ -13,6 +13,8 @@ import { createLibp2p } from 'libp2p';
 import { bufferToBase64, stringToBase64 } from '../auth';
 import { ORIGIN_DOMAIN, TURN_SERVERS } from '../constants';
 
+export const MAX_MESSAGE_SIZE = 8 * 64 * 1024;
+
 const PING_PROTOCOL_PREFIX = 'pportal';
 const RELAY_ADDRESS_REGEX = new RegExp(`^p2p-relay-[0-9]+.${ORIGIN_DOMAIN}$`);
 
@@ -83,7 +85,13 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
 
         // The total number of outbound protocol streams that can be opened on a given connection
         // This field is optional, the default value is shown
-        maxOutboundStreams: 100
+        maxOutboundStreams: 100,
+
+        // Used to control the maximum window size that we allow for a stream.
+        maxStreamWindowSize: 8 * MAX_MESSAGE_SIZE,
+
+        // set the max message size
+        maxMessageSize: MAX_MESSAGE_SIZE
       })
     ],
     connectionGater: {
@@ -175,7 +183,7 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
     services: {
       identify: identify(),
       ping: ping({
-        timeout: 30_000,
+        timeout: 30000,
         protocolPrefix: PING_PROTOCOL_PREFIX
       })
     },
