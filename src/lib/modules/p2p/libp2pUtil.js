@@ -13,7 +13,8 @@ import { createLibp2p } from 'libp2p';
 import { bufferToBase64, stringToBase64 } from '../auth';
 import { ORIGIN_DOMAIN, TURN_SERVERS } from '../constants';
 
-export const MAX_MESSAGE_SIZE = 8 * 64 * 1024;
+// match the webrtc data channel message size and account for overhead
+export const MAX_MESSAGE_SIZE = (16 * 1024) - 256;
 
 const PING_PROTOCOL_PREFIX = 'pportal';
 const RELAY_ADDRESS_REGEX = new RegExp(`^p2p-relay-[0-9]+.${ORIGIN_DOMAIN}$`);
@@ -64,7 +65,15 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
               username: session.turn.username,
               credential: session.turn.credential
             }
-          ]
+          ],
+          iceTransportPolicy: 'relay'
+        },
+        dataChannel: {
+          // wait for bufferedAmountLow event
+          bufferedAmountLowEventTimeout: 60000,
+
+          // Wait for `bufferedAmount` to become 0 before closing the underlying RTCDataChannel
+          drainTimeout: 60000
         }
       }),
       // support dialing/listening on Circuit Relay addresses
@@ -79,6 +88,10 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
     // a stream muxer is necessary to dial the relay
     streamMuxers: [
       yamux({
+        // keep alive
+        enableKeepAlive: true,
+        keepAliveInterval: 5000,
+
         // The total number of inbound protocol streams that can be opened on a given connection
         // This field is optional, the default value is shown
         maxInboundStreams: 100,
@@ -88,7 +101,7 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
         maxOutboundStreams: 100,
 
         // Used to control the maximum window size that we allow for a stream.
-        maxStreamWindowSize: 8 * MAX_MESSAGE_SIZE,
+        maxStreamWindowSize: 64 * MAX_MESSAGE_SIZE,
 
         // set the max message size
         maxMessageSize: MAX_MESSAGE_SIZE
@@ -199,6 +212,9 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
     connectionMonitor: {
       enabled: true,
       abortConnectionOnPingFailure: true,
+      pingTimeout: {
+        initialValue: 10000
+      },
       protocolPrefix: PING_PROTOCOL_PREFIX
     }
   });
@@ -206,19 +222,20 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
   return node;
 }
 
-export async function closeConnections(node) {
+export async function closeConnections(node, options) {
+  const { abort } = { ...options };
   return await Promise.race([
-    Promise.all(node.getConnections().map((conn) => conn.close())),
+    Promise.all(node.getConnections().map((conn) => abort ? conn.abort() : conn.close())),
     new Promise((_, reject) => setTimeout(() => reject(new Error('closing connections timeout')), 5000))
   ]).catch((err) => {
     console.error('failed to close connections', err);
   });
 }
 
-export async function stopNode(node) {
+export async function stopNode(node, options) {
   try {
     // Close all connections
-    await closeConnections(node);
+    await closeConnections(node, options);
 
     // Stop the libp2p node itself
     await node.stop();

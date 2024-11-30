@@ -49,17 +49,18 @@
           });
         }
 
+        node.addEventListener('self:peer:update', () => {
+          console.log('event: self:peer:update');
+          console.log(`Advertising with a relay address of ${node.getMultiaddrs().map((addr) => addr.toString())}`);
+        });
+
         file_promise = handleFileTransferProtocol({
           node,
           peerAddress: multiaddr(remoteAddress),
           expectedSize: fileSize,
           resolveConnected,
+          rejectConnected,
           fileTransferProgress
-        });
-
-        node.addEventListener('self:peer:update', () => {
-          console.log('event: self:peer:update');
-          console.log(`Advertising with a relay address of ${node.getMultiaddrs().map((addr) => addr.toString())}`);
         });
       } catch (err) {
         rejectConnected(err);

@@ -115,7 +115,8 @@
         },
         {
           maxInboundStreams: 100,
-          maxOutboundStreams: 100
+          maxOutboundStreams: 100,
+          runOnLimitedConnection: false
         }
       );
 
@@ -191,9 +192,9 @@
     handleClose();
   }
 
-  async function closeConnectionsAndStopNode() {
+  async function closeConnectionsAndStopNode(options) {
     if (node) {
-      await stopNode(node).catch(console.error);
+      await stopNode(node, options).catch(console.error);
       node = undefined;
     }
   }
@@ -211,11 +212,11 @@
   });
 
   onDestroy(async () => {
-    await closeConnectionsAndStopNode();
+    await closeConnectionsAndStopNode({ abort: true });
   });
 </script>
 
-<svelte:window on:beforeunload={closeConnectionsAndStopNode} />
+<svelte:window on:beforeunload={() => closeConnectionsAndStopNode({ abort: true })} />
 
 <FlexContainer column align_items="center" justify_content="center" padding="0.5rem" gap="0.5rem">
   <GridContainer width="100%" align_items="center" justify_items="start" template_columns="15px auto" padding="0.5rem" gap="0.3rem">
