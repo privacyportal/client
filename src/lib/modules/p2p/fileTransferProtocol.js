@@ -1,14 +1,12 @@
 import { createDecompressionStream } from '../compression/compressionUtils';
 import { createFile } from '../export';
 
-export async function handleFileTransferProtocol({ node, peerAddress, expectedSize, resolveConnected, fileTransferProgress=undefined }) {
+export async function handleFileTransferProtocol({ node, peerAddress, expectedSize, resolveConnected, rejectConnected, fileTransferProgress=undefined }) {
   return new Promise(async (resolve, reject) => {
     try {
       console.log('dialProtocol:', peerAddress.toString());
-      const stream = await node.dialProtocol(peerAddress, ['/file-transfer/1.0.0']).catch((err) => {
-        console.error('Failed to create new stream:', err);
-        throw err;
-      });
+      const stream = await node.dialProtocol(peerAddress, ['/file-transfer/1.0.0'], { runOnLimitedConnection: false }).catch(rejectConnected);
+      if (!stream) return reject('Failed to create new stream.');
 
       // notify that we're connected
       if (resolveConnected !== undefined) {
@@ -56,7 +54,7 @@ export async function handleFileTransferProtocol({ node, peerAddress, expectedSi
         .pipeThrough(decompressionStream)
         .pipeTo(collectChunksStream)
         .catch((err) => {
-          console.error(err);
+          console.error(err, { streamStatus: stream.status });
           stream.close().catch(console.error);
           throw err;
         });
