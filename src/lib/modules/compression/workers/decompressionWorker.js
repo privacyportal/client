@@ -1,7 +1,7 @@
 import { typedArrayToArrayBuffer } from '$lib/modules/utils';
-import { Gunzip } from 'fflate';
+import { Inflate } from 'fflate';
 
-const decompressor = new Gunzip();
+const decompressor = new Inflate();
 decompressor.ondata = (chunk, final) => {
   const chunkArrayBuffer = typedArrayToArrayBuffer(chunk)
   self.postMessage({ chunk: chunkArrayBuffer, final }, [chunkArrayBuffer]);

@@ -1,7 +1,7 @@
 import { typedArrayToArrayBuffer } from '$lib/modules/utils';
-import { Gzip } from 'fflate';
+import { Deflate } from 'fflate';
 
-const compressor = new Gzip();
+const compressor = new Deflate();
 compressor.ondata = function (chunk, final) {
   const chunkArrayBuffer = typedArrayToArrayBuffer(chunk)
   self.postMessage({ chunk: chunkArrayBuffer, final }, [chunkArrayBuffer]);

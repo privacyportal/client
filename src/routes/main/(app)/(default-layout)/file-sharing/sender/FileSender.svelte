@@ -9,7 +9,7 @@
   import RefreshIcon from '$lib/components/materialIcons/RefreshIcon.svelte';
   import CloseIcon from '$lib/components/materialIcons/CloseIcon.svelte';
   import { createFileSharingInvite, createFileSharingSession } from '$lib/modules/requests';
-  import { generateLibp2pPeerId, libp2pIssueToken, startLibp2pNode, stopNode } from '$lib/modules/p2p/libp2pUtil';
+  import { generateLibp2pPeerId, libp2pIssueToken, MAX_MESSAGE_SIZE, startLibp2pNode, stopNode } from '$lib/modules/p2p/libp2pUtil';
   import { KEEP_ALIVE } from '@libp2p/interface';
   import { CustomError, displayError } from '$lib/modules/errors';
   import { session } from '$lib/stores/account';
@@ -20,6 +20,8 @@
   import { createCompressionStream } from '$lib/modules/compression/compressionUtils';
   import { ORIGIN_DOMAIN } from '$lib/modules/constants';
   import { createFixedSizeMessageTransform } from '$lib/modules/p2p/streamsUtil';
+  import { byteStream } from 'it-byte-stream';
+  import { decodeStartByteIndex, START_BYTE_INDEX_SIZE } from '$lib/modules/p2p/fileTransferProtocol';
 
   const SENDING_STEPS = [
     { labels: ['Connecting to relay...', 'Connected to relay.'], action: connectToRelay },
@@ -98,13 +100,20 @@
       });
 
       node.handle(
-        '/file-transfer/1.0.0',
-        async ({ connection, stream, protocol }) => {
+        ['/file-transfer/1.0.0', '/file-transfer-continue/1.0.0'],
+        async ({ connection, stream }) => {
           try {
+            let startByteIndex = 0;
+            if (stream.protocol.includes('continue')) {
+              // read the start byte index
+              const startByteIndexBuffer = await byteStream(stream).read(START_BYTE_INDEX_SIZE);
+              startByteIndex = decodeStartByteIndex(startByteIndexBuffer.subarray());
+            }
+
             transfersInProgress++;
             // compress then transfer
             const compressionStream = await createCompressionStream();
-            const fixedSizeMessageTransform = createFixedSizeMessageTransform();
+            const fixedSizeMessageTransform = createFixedSizeMessageTransform(MAX_MESSAGE_SIZE, { startByteIndex });
             await stream.sink(file.stream().pipeThrough(compressionStream).pipeThrough(fixedSizeMessageTransform));
             transfersCompleted++;
           } catch (err) {

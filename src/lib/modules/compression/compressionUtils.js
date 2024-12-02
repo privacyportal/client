@@ -95,14 +95,14 @@ export function fflateAsyncDecompressionStream() {
 }
 
 export async function createCompressionStream() {
-  if ('CompressionStream' in window) return new CompressionStream('gzip');
+  if ('CompressionStream' in window) return new CompressionStream('deflate-raw');
 
   // fallback to fflate
   return fflateAsyncCompressionStream();
 }
 
 export async function createDecompressionStream() {
-  if ('DecompressionStream' in window) return new DecompressionStream('gzip');
+  if ('DecompressionStream' in window) return new DecompressionStream('deflate-raw');
 
   // fallback to fflate
   return fflateAsyncDecompressionStream();

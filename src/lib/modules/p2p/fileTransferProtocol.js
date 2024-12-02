@@ -1,30 +1,72 @@
+import { CONNECTION_STATUS } from '$lib/stores/pdfPreview';
 import { createDecompressionStream } from '../compression/compressionUtils';
 import { createFile } from '../export';
+import { byteStream } from 'it-byte-stream';
+import { decodeData, encodeData } from './libp2pUtil';
 
-export async function handleFileTransferProtocol({ node, peerAddress, expectedSize, resolveConnected, rejectConnected, fileTransferProgress=undefined }) {
+const CMD_TIMEOUT = 30000;
+export const START_BYTE_INDEX_SIZE = 30;
+
+export function encodeStartByteIndex(startByteIndex) {
+  return encodeData(Number(startByteIndex).toString(16).padStart(START_BYTE_INDEX_SIZE, '0'));
+}
+
+export function decodeStartByteIndex(bytes) {
+  return Number(`0x${decodeData(bytes)}`);
+}
+
+export async function handleFileTransferProtocol({ node, peerAddress, expectedSize, connectionStatus, fileTransferProgress=undefined }) {
   return new Promise(async (resolve, reject) => {
     try {
-      console.log('dialProtocol:', peerAddress.toString());
-      const stream = await node.dialProtocol(peerAddress, ['/file-transfer/1.0.0'], { runOnLimitedConnection: false }).catch(rejectConnected);
-      if (!stream) return reject('Failed to create new stream.');
-
-      // notify that we're connected
-      if (resolveConnected !== undefined) {
-        resolveConnected();
-      }
-
+      let stream;
       const data = [];
+      let bytesReceived = 0;
       let size = 0;
+      let retries = 10;
 
       const decompressionStream = await createDecompressionStream();
 
       const compressedReadable = new ReadableStream({
         async start(controller) {
-          for await (const chunk of stream.source) {
-            controller.enqueue(chunk.subarray());
+          while (bytesReceived < expectedSize) {
+            try {
+              console.log('dialProtocol:', peerAddress.toString());
+              connectionStatus.set(CONNECTION_STATUS[1]);
+              stream = await node.dialProtocol(peerAddress, [bytesReceived ? '/file-transfer-continue/1.0.0' : '/file-transfer/1.0.0'], { runOnLimitedConnection: false });
+              connectionStatus.set(CONNECTION_STATUS[2]);
+
+              if (bytesReceived) {
+                const signal = AbortSignal.timeout(CMD_TIMEOUT);
+                signal.addEventListener('abort', () => { stream?.abort(new Error('command timeout')); });
+                // send the starting byte
+                await byteStream(stream).write(encodeStartByteIndex(bytesReceived), { signal });
+              }
+
+              for await (const chunk of stream.source) {
+                const bytes = chunk.subarray();
+                controller.enqueue(bytes);
+                bytesReceived += bytes.byteLength;
+              }
+
+              // Close the stream when done
+              controller.close();
+              connectionStatus.set(CONNECTION_STATUS[0]);
+              return;
+            } catch (err) {
+              connectionStatus.set(CONNECTION_STATUS[1]);
+              if (stream) {
+                try {
+                  await stream.abort(err);
+                } catch (abortErr) {
+                  console.error(abortErr);
+                }
+              }
+              if (retries-- <= 1) {
+                controller.abort(err);
+                break;
+              }
+            }
           }
-          // Close the stream when done
-          controller.close();
         }
       });
 
@@ -53,9 +95,15 @@ export async function handleFileTransferProtocol({ node, peerAddress, expectedSi
       await compressedReadable
         .pipeThrough(decompressionStream)
         .pipeTo(collectChunksStream)
-        .catch((err) => {
-          console.error(err, { streamStatus: stream.status });
-          stream.close().catch(console.error);
+        .catch(async (err) => {
+          console.error(err, { streamStatus: stream?.status });
+          if (stream) {
+            try {
+              await stream.close();    
+            } catch (streamCloseErr) {
+              console.error(streamCloseErr);
+            }
+          }
           throw err;
         });
 
