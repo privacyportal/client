@@ -23,9 +23,14 @@ export async function generateLibp2pPeerId() {
   return await createEd25519PeerId();
 }
 
-function encodeData(data) {
+export function encodeData(data) {
   const encoder = new TextEncoder();
   return encoder.encode(data);
+}
+
+export function decodeData(data) {
+  const decoder = new TextDecoder();
+  return decoder.decode(data);
 }
 
 export async function libp2pSign({ peerId, data }) {

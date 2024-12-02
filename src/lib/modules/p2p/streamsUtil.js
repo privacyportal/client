@@ -1,6 +1,8 @@
 import { MAX_MESSAGE_SIZE } from "./libp2pUtil";
 
-export function createFixedSizeMessageTransform(messageSize = MAX_MESSAGE_SIZE) {
+export function createFixedSizeMessageTransform(messageSize = MAX_MESSAGE_SIZE, options) {
+  const { startByteIndex } = { startByteIndex: 0, ...options };
+  let remainingBytesToSkip = startByteIndex;
   let buffer = new Uint8Array(0);
 
   return new TransformStream({
@@ -10,12 +12,23 @@ export function createFixedSizeMessageTransform(messageSize = MAX_MESSAGE_SIZE) 
         chunk = new Uint8Array(chunk);
       }
 
-      // Combine the incoming chunk with any existing buffered data
-      const newBuffer = new Uint8Array(buffer.length + chunk.length);
-      newBuffer.set(buffer);
-      newBuffer.set(chunk, buffer.length);
-
-      buffer = newBuffer;
+      if (remainingBytesToSkip > 0) {
+        if (chunk.length <= remainingBytesToSkip) {
+          remainingBytesToSkip -= chunk.length;
+          return;
+        } else {
+          const newBuffer = new Uint8Array(chunk.length - remainingBytesToSkip);
+          newBuffer.set(chunk.slice(remainingBytesToSkip));
+          buffer = newBuffer;
+          remainingBytesToSkip = 0;
+        }
+      } else {
+        // Combine the incoming chunk with any existing buffered data
+        const newBuffer = new Uint8Array(buffer.length + chunk.length);
+        newBuffer.set(buffer);
+        newBuffer.set(chunk, buffer.length);
+        buffer = newBuffer;
+      }
 
       // Process the buffer into fixed-size messages
       while (buffer.length >= messageSize) {
