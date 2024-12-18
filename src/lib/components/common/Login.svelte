@@ -79,7 +79,8 @@
       response: {
         clientDataJSON: bufferToBase64(credential.response.clientDataJSON),
         attestationObject: bufferToBase64(credential.response.attestationObject)
-      }
+      },
+      ...(credential.getClientExtensionResults()?.prf?.enabled && { prf: true })
     };
   }
 
@@ -200,12 +201,21 @@
       const credentialRequestOptions = data.options;
       credentialRequestOptions.challenge = base64ToBuffer(credentialRequestOptions.challenge);
 
+      if (credentialRequestOptions?.extensions?.prf) {
+        const { prf } = credentialRequestOptions.extensions;
+        if (prf?.eval?.first) prf.eval.first = base64ToBuffer(prf.eval.first);
+        if (prf?.eval?.second) prf.eval.second = base64ToBuffer(prf.eval.second);
+      }
+
       console.log(credentialRequestOptions);
       const credential = await navigator.credentials.get({
         publicKey: credentialRequestOptions
       });
 
       console.log(credential);
+
+      // Uncomment to Retrieve PRF results
+      // const prfResult = credential.getClientExtensionResults()?.prf?.results;
 
       const res = await signIn({
         credential: {

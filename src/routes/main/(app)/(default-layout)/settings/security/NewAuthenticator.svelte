@@ -8,6 +8,7 @@
   import CloseIcon from '$lib/components/materialIcons/CloseIcon.svelte';
   import CopyIcon from '$lib/components/materialIcons/CopyIcon.svelte';
   import { base64ToBuffer, bufferToBase64, bufferToUUID, stringToBase64 } from '$lib/modules/auth';
+  import { CustomError, displayError } from '$lib/modules/errors';
   import { getNewAuthenticatorChallenge, registerAuthenticator } from '$lib/modules/requests';
   import { writeValueToClipboard } from '$lib/modules/utils';
   import { showSnackbar } from '$lib/stores/snackbar';
@@ -55,6 +56,11 @@
       // formatted credential creation options
       attestation_opts.challenge = base64ToBuffer(attestation_opts.challenge);
       attestation_opts.user.id = base64ToBuffer(attestation_opts.user.id);
+      if (attestation_opts.excludeCredentials) {
+        for (let credentialToExclude of attestation_opts.excludeCredentials) {
+          credentialToExclude.id = base64ToBuffer(credentialToExclude.id);
+        }
+      }
       credentialCreationOptions = attestation_opts;
     } finally {
       loading = false;
@@ -78,7 +84,8 @@
           response: {
             clientDataJSON: bufferToBase64(credential.response.clientDataJSON),
             attestationObject: bufferToBase64(credential.response.attestationObject)
-          }
+          },
+          ...(credential.getClientExtensionResults()?.prf?.enabled && { prf: true })
         }
       });
 
@@ -87,6 +94,8 @@
         showSnackbar({ text: 'Please activate your newly registered Passkey using one of your trusted Passkeys.', ttl: 15000 });
         done();
       }
+    } catch (err) {
+      displayError(new CustomError({ message: 'Unable to register Passkey. Please try using a different method.' }));
     } finally {
       loading = false;
     }

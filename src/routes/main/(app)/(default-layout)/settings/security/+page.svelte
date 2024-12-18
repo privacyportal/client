@@ -9,7 +9,6 @@
   import { displayError } from '$lib/modules/errors';
   import { activateAuthenticator, deactivateAuthenticator, deleteApiKey, deleteAuthenticator, getApiKeys, getAuthenticators } from '$lib/modules/requests';
   import { formatDate, formatDuration } from '$lib/modules/utils';
-  import { isEnhancedProtection } from '$lib/stores/account';
   import { onMount } from 'svelte';
   import AccountRecovery from './AccountRecovery.svelte';
   import NewApiKey from './NewApiKey.svelte';
@@ -108,9 +107,7 @@
 
   onMount(async () => {
     await fetchAuthenticators();
-    if ($isEnhancedProtection) {
-      await fetchApiKeys();
-    }
+    await fetchApiKeys();
   });
 </script>
 

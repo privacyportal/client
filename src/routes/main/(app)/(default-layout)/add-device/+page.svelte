@@ -8,6 +8,7 @@
   import Section from '$lib/components/common/Section.svelte';
   import Logo from '$lib/components/svg/Logo.svelte';
   import { base64ToBuffer, base64ToString, bufferToBase64, bufferToUUID } from '$lib/modules/auth';
+  import { CustomError, displayError } from '$lib/modules/errors';
   import { registerAuthenticator } from '$lib/modules/requests';
   import { endSession, isDarkMode } from '$lib/stores/account';
   import { showSnackbar } from '$lib/stores/snackbar';
@@ -37,12 +38,15 @@
           response: {
             clientDataJSON: bufferToBase64(credential.response.clientDataJSON),
             attestationObject: bufferToBase64(credential.response.attestationObject)
-          }
+          },
+          ...(credential.getClientExtensionResults()?.prf?.enabled && { prf: true })
         }
       });
 
       // authenticator registered successfully
       registered = true;
+    } catch (err) {
+      displayError(new CustomError({ message: 'Unable to register Passkey. Please try using a different method.' }));
     } finally {
       submitting = false;
     }
@@ -63,6 +67,11 @@
         // formatted credential creation options
         attestation_opts.challenge = base64ToBuffer(attestation_opts.challenge);
         attestation_opts.user.id = base64ToBuffer(attestation_opts.user.id);
+        if (attestation_opts.excludeCredentials) {
+          for (let credentialToExclude of attestation_opts.excludeCredentials) {
+            credentialToExclude.id = base64ToBuffer(credentialToExclude.id);
+          }
+        }
         credentialCreationOptions = attestation_opts;
       }
     } catch (err) {
