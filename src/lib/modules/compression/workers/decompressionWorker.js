@@ -3,9 +3,9 @@ import { Inflate } from 'fflate';
 
 const decompressor = new Inflate();
 decompressor.ondata = (chunk, final) => {
-  const chunkArrayBuffer = typedArrayToArrayBuffer(chunk)
+  const chunkArrayBuffer = typedArrayToArrayBuffer(chunk);
   self.postMessage({ chunk: chunkArrayBuffer, final }, [chunkArrayBuffer]);
-}
+};
 
 self.onmessage = function (event) {
   try {
@@ -19,4 +19,4 @@ self.onmessage = function (event) {
       throw 'error';
     });
   }
-}
+};

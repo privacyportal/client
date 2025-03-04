@@ -18,9 +18,9 @@ self.addEventListener('install', (event) => {
 
   // Create a new cache and add all files to it
   async function addFilesToCache() {
-		const cache = await caches.open(CACHE);
-		await cache.addAll(ASSETS);
-	}
+    const cache = await caches.open(CACHE);
+    await cache.addAll(ASSETS);
+  }
 
   event.waitUntil(addFilesToCache());
 });
@@ -30,9 +30,9 @@ self.addEventListener('activate', (event) => {
   // Remove previous cached data from disk
   async function deleteOldCaches() {
     for (const key of await caches.keys()) {
-			if (!key.startsWith(CACHE)) await caches.delete(key);
-		}
-	}
+      if (!key.startsWith(CACHE)) await caches.delete(key);
+    }
+  }
 
   event.waitUntil(deleteOldCaches());
 });
@@ -50,7 +50,7 @@ self.addEventListener('fetch', (event) => {
         if (formData.has('pdfFile')) {
           // handle file as a target for file-sharing
           const searchParams = new URLSearchParams();
-          searchParams.append('share-target', "");
+          searchParams.append('share-target', '');
           try {
             const file = formData.get('pdfFile');
             const fsCache = await caches.open(`${CACHE}-file-sharing`);
@@ -70,25 +70,25 @@ self.addEventListener('fetch', (event) => {
           }
           return Response.redirect(`${location.origin}/mail-relay?${searchParams.toString()}`, 303);
         }
-      })(),
+      })()
     );
   }
 
   // only serve GET requests from the cache
-	if (request.method !== 'GET') return;
+  if (request.method !== 'GET') return;
 
   // only serve `build`/`files` from the cache
   if (url.origin !== location.origin || !ASSETS.includes(url.pathname)) return;
 
   async function respond() {
-		const cache = await caches.open(CACHE);
+    const cache = await caches.open(CACHE);
     const response = await cache.match(url.pathname);
     if (!response) {
       console.error('Failed to respond from cache.');
       throw new Error('Failed to respond from cache.');
     }
     return response;
-	}
+  }
 
   event.respondWith(respond());
 });

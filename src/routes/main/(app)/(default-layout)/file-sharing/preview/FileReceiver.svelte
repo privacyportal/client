@@ -69,7 +69,7 @@
     } catch (err) {
       error = err;
       console.error(err);
-      throw new CustomError({ message: 'Failed to receive file. Please try again.' })
+      throw new CustomError({ message: 'Failed to receive file. Please try again.' });
     }
   }
 
@@ -136,7 +136,7 @@
       <span></span>
       <FlexContainer gap="0.5rem">
         <progress value={$fileTransferProgress} max="100"></progress>
-        <span class='sm'>{$fileTransferProgress}%</span>
+        <span class="sm">{$fileTransferProgress}%</span>
       </FlexContainer>
     {/if}
   </GridContainer>

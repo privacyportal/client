@@ -1,8 +1,8 @@
 <script>
   import '$lib/../app.css';
   import 'pdfjs-dist/web/pdf_viewer.css';
-  import { getDocument, GlobalWorkerOptions, PasswordResponses } from 'pdfjs-dist'
-  import { PDFViewer, EventBus, PDFLinkService, GenericL10n, PDFScriptingManager } from 'pdfjs-dist/web/pdf_viewer.mjs'
+  import { getDocument, GlobalWorkerOptions, PasswordResponses } from 'pdfjs-dist';
+  import { PDFViewer, EventBus, PDFLinkService, GenericL10n, PDFScriptingManager } from 'pdfjs-dist/web/pdf_viewer.mjs';
   import { onMount } from 'svelte';
   import FlexContainer from '$lib/components/common/FlexContainer.svelte';
   import Form from '$lib/components/common/Form.svelte';
@@ -15,7 +15,7 @@
   import { PDFRenderingQueue } from '$lib/modules/pdf/PDFRenderingQueue';
 
   const DEFAULT_PRINT_RESOLUTION = 150;
-  const DEFAULT_SCALE_VALUE = "auto";
+  const DEFAULT_SCALE_VALUE = 'auto';
   const MAX_IMAGE_SIZE = 30 * 1024 * 1024;
 
   const WORKER_SRC = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url);
@@ -53,7 +53,7 @@
       l10n = new GenericL10n();
       pdfScriptingManager = new PDFScriptingManager({
         eventBus,
-        sandboxBundleSrc: SANDBOX_BUNDLE_SRC,
+        sandboxBundleSrc: SANDBOX_BUNDLE_SRC
       });
       pdfRenderingQueue = new PDFRenderingQueue();
       pdfViewer = new PDFViewer({
@@ -71,7 +71,7 @@
       pdfScriptingManager.setViewer(pdfViewer);
       pdfRenderingQueue.setViewer(pdfViewer);
 
-      eventBus.on("pagesinit", function () {
+      eventBus.on('pagesinit', function () {
         // We can use pdfViewer now, e.g. let's change default scale.
         pdfViewer.currentScaleValue = DEFAULT_SCALE_VALUE;
       });
@@ -82,12 +82,12 @@
         maxImageSize: MAX_IMAGE_SIZE,
         cMapUrl: '/pdfjs-dist/cmaps/',
         cMapPacked: true
-      })
+      });
 
       loadingTask.onPassword = function (setPassword, reason) {
         setPasswordCallback = setPassword;
         passwordReason = reason;
-      }
+      };
 
       loadingTask.onProgress = function (progressData) {
         console.log('loading progress:', progressData.loaded / progressData.total);
@@ -99,7 +99,7 @@
       pdfViewer.setDocument(pdfDocument);
       linkService.setDocument(pdfDocument);
 
-      eventBus.on('pagerendered', function() {
+      eventBus.on('pagerendered', function () {
         if (!printProcessingInitialized) {
           // setup printing
           setupPrintProcessing({
@@ -131,11 +131,11 @@
   }
 
   function propagateBeforePrint() {
-    if (eventBus) eventBus.dispatch("beforeprint", { source: window });
+    if (eventBus) eventBus.dispatch('beforeprint', { source: window });
   }
 
   function propagateAfterPrint() {
-    if (eventBus) eventBus.dispatch("afterprint", { source: window });
+    if (eventBus) eventBus.dispatch('afterprint', { source: window });
   }
 
   function handleMessage(event) {
@@ -151,7 +151,9 @@
 
 <svelte:window
   on:message={handleMessage}
-  on:resize={() => { pdfViewer.currentScaleValue = DEFAULT_SCALE_VALUE; }}
+  on:resize={() => {
+    pdfViewer.currentScaleValue = DEFAULT_SCALE_VALUE;
+  }}
   on:beforeprint={propagateBeforePrint}
   on:afterprint={propagateAfterPrint}
 />
@@ -160,7 +162,7 @@
 
 <div id="outerContainer">
   {#if error}
-    <FlexContainer column height='100vh' align_items='center' justify_content='center' bgColor='var(--new-layer-color)' padding="0.5rem">
+    <FlexContainer column height="100vh" align_items="center" justify_content="center" bgColor="var(--new-layer-color)" padding="0.5rem">
       <GridContainer width="auto" align_items="center" template_columns="30px 1fr" gap="0.5rem">
         <WarningIcon color="var(--danger-color)" dimension="30px" />
         <h3 class="no-margin">Oops! File preview failed...</h3>
@@ -172,8 +174,8 @@
     </div>
     {#if passwordReason}
       <Form on:submit={submitPassword}>
-        <FlexContainer column height='100vh' width='auto' align_items='center' justify_content='center' padding="0.5rem">
-          <FlexContainer column width='auto' align_items='center' justify_content='center' padding="1rem" gap="1rem" rounded>
+        <FlexContainer column height="100vh" width="auto" align_items="center" justify_content="center" padding="0.5rem">
+          <FlexContainer column width="auto" align_items="center" justify_content="center" padding="1rem" gap="1rem" rounded>
             <h4 class="no-margin">{passwordReason === PasswordResponses.NEED_PASSWORD ? 'PDF Requires Password' : 'Incorrect Password'}</h4>
             <FlexContainer column width="auto" gap="0.5rem">
               <Input type="password" name="password" placeholder="Enter Password" bind:value={password} />

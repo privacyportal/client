@@ -57,7 +57,7 @@
       pdfViewer.contentWindow.postMessage({
         type: 'to-preview',
         value: fileURL
-      })
+      });
     }
   }
 
@@ -118,12 +118,7 @@
   }
 
   function interceptPrinting(event) {
-    if (
-      event.keyCode === /* P= */ 80 &&
-      (event.ctrlKey || event.metaKey) &&
-      !event.altKey &&
-      (!event.shiftKey || window.chrome || window.opera)
-    ) {
+    if (event.keyCode === /* P= */ 80 && (event.ctrlKey || event.metaKey) && !event.altKey && (!event.shiftKey || window.chrome || window.opera)) {
       triggerPrint();
       event.preventDefault();
       event.stopImmediatePropagation();
@@ -155,10 +150,10 @@
     if (fileURL) {
       URL.revokeObjectURL(fileURL);
     }
-  })
+  });
 </script>
 
-<svelte:window on:message={handleMessage} on:keydown={interceptPrinting}/>
+<svelte:window on:message={handleMessage} on:keydown={interceptPrinting} />
 
 {#if file}
   <FlexContainer width="100%" height="100%" relative>
@@ -166,7 +161,7 @@
     {#if shouldOpenInNewTab}
       <div class="pdf-overlay">
         <FlexContainer height="100%" column align_items="center" justify_content="center" bgColor="var(--disabled-layer-color)" gap="3rem" width="auto">
-          <Button on:click={handleOpenFile} padding='0px 0.5rem' primary rounded>Open File</Button>
+          <Button on:click={handleOpenFile} padding="0px 0.5rem" primary rounded>Open File</Button>
         </FlexContainer>
       </div>
     {/if}

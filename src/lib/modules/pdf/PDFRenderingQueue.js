@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { RenderingCancelledException } from "pdfjs-dist";
-import { RenderingStates } from "pdfjs-dist/web/pdf_viewer.mjs";
+import { RenderingCancelledException } from 'pdfjs-dist';
+import { RenderingStates } from 'pdfjs-dist/web/pdf_viewer.mjs';
 
 const CLEANUP_TIMEOUT = 30000;
 
@@ -32,9 +32,9 @@ class PDFRenderingQueue {
     this.printing = false;
     this.isThumbnailViewEnabled = false;
 
-    if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
-      Object.defineProperty(this, "hasViewer", {
-        value: () => !!this.pdfViewer,
+    if (typeof PDFJSDev === 'undefined' || PDFJSDev.test('GENERIC')) {
+      Object.defineProperty(this, 'hasViewer', {
+        value: () => !!this.pdfViewer
       });
     }
   }
@@ -75,10 +75,7 @@ class PDFRenderingQueue {
       return;
     }
     // No pages needed rendering, so check thumbnails.
-    if (
-      this.isThumbnailViewEnabled &&
-      this.pdfThumbnailViewer?.forceRendering()
-    ) {
+    if (this.isThumbnailViewEnabled && this.pdfThumbnailViewer?.forceRendering()) {
       return;
     }
 
@@ -192,7 +189,7 @@ class PDFRenderingQueue {
           .finally(() => {
             this.renderHighestPriority();
           })
-          .catch(reason => {
+          .catch((reason) => {
             if (reason instanceof RenderingCancelledException) {
               return;
             }

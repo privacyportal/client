@@ -13,21 +13,12 @@
  * limitations under the License.
  */
 
-import { PDFPrintServiceFactory } from "./PDFPrintService";
+import { PDFPrintServiceFactory } from './PDFPrintService';
 
 let printProcessing;
 
 class PrintProcessing {
-  constructor({
-    eventBus,
-    printContainer,
-    printResolution,
-    pdfDocument,
-    pdfViewer,
-    pdfRenderingQueue,
-    l10n,
-    pdfScriptingManager
-  }) {
+  constructor({ eventBus, printContainer, printResolution, pdfDocument, pdfViewer, pdfRenderingQueue, l10n, pdfScriptingManager }) {
     this.eventBus = eventBus;
     this.printContainer = printContainer;
     this.printResolution = printResolution;
@@ -45,35 +36,35 @@ class PrintProcessing {
         /* Avoid breaking printing; ignoring errors. */
       })
       .then(() => this.pdfDocument?.annotationStorage.print);
-  
+
     if (this.printService) {
       // There is no way to suppress beforePrint/afterPrint events,
       // but PDFPrintService may generate double events -- this will ignore
       // the second event that will be coming from native window.print().
       return;
     }
-  
+
     if (!PDFPrintServiceFactory.supportsPrinting) {
-      this._otherError("pdfjs-printing-not-supported");
+      this._otherError('pdfjs-printing-not-supported');
       return;
     }
-  
+
     // The beforePrint is a sync method and we need to know layout before
     // returning from this method. Ensure that we can get sizes of the pages.
     if (!this.pdfViewer.pageViewsReady) {
-      this.l10n.get("pdfjs-printing-not-ready").then(msg => {
+      this.l10n.get('pdfjs-printing-not-ready').then((msg) => {
         // eslint-disable-next-line no-alert
         window.alert(msg);
       });
       return;
     }
-  
+
     this.printService = PDFPrintServiceFactory.createPrintService({
       pdfDocument: this.pdfDocument,
       pagesOverview: this.pdfViewer.getPagesOverview(),
       printContainer: this.printContainer,
       printResolution: this.printResolution,
-      printAnnotationStoragePromise: this.printAnnotationStoragePromise,
+      printAnnotationStoragePromise: this.printAnnotationStoragePromise
     });
 
     this.forceRendering();
@@ -93,27 +84,18 @@ class PrintProcessing {
       });
       this.printAnnotationStoragePromise = null;
     }
-  
+
     if (this.printService) {
       this.printService.destroy();
       this.printService = null;
-  
+
       this.pdfDocument?.annotationStorage.resetModified();
     }
     this.forceRendering();
   }
 }
 
-export default function setupPrintProcessing({
-  eventBus,
-  printContainer,
-  printResolution,
-  pdfDocument,
-  pdfViewer,
-  pdfRenderingQueue,
-  l10n,
-  pdfScriptingManager
-}) {
+export default function setupPrintProcessing({ eventBus, printContainer, printResolution, pdfDocument, pdfViewer, pdfRenderingQueue, l10n, pdfScriptingManager }) {
   if (printProcessing) throw new Error('Print processing already set up.');
   printProcessing = new PrintProcessing({
     eventBus,
@@ -127,6 +109,6 @@ export default function setupPrintProcessing({
   });
 
   const ac = new AbortController();
-  eventBus._on("beforeprint", () => printProcessing.beforePrint(), { signal: ac.signal });
-  eventBus._on("afterprint", () => printProcessing.afterPrint(), { signal: ac.signal });
+  eventBus._on('beforeprint', () => printProcessing.beforePrint(), { signal: ac.signal });
+  eventBus._on('afterprint', () => printProcessing.afterPrint(), { signal: ac.signal });
 }
