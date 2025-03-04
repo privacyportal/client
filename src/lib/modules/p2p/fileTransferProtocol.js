@@ -1,7 +1,7 @@
 import { CONNECTION_STATUS } from '$lib/stores/pdfPreview';
+import { byteStream } from 'it-byte-stream';
 import { createDecompressionStream } from '../compression/compressionUtils';
 import { createFile } from '../export';
-import { byteStream } from 'it-byte-stream';
 import { decodeData, encodeData } from './libp2pUtil';
 
 const CMD_TIMEOUT = 30000;
@@ -15,7 +15,7 @@ export function decodeStartByteIndex(bytes) {
   return Number(`0x${decodeData(bytes)}`);
 }
 
-export async function handleFileTransferProtocol({ node, peerAddress, expectedSize, connectionStatus, fileTransferProgress=undefined }) {
+export async function handleFileTransferProtocol({ node, peerAddress, expectedSize, connectionStatus, fileTransferProgress = undefined }) {
   return new Promise(async (resolve, reject) => {
     try {
       let stream;
@@ -37,7 +37,9 @@ export async function handleFileTransferProtocol({ node, peerAddress, expectedSi
 
               if (bytesReceived) {
                 const signal = AbortSignal.timeout(CMD_TIMEOUT);
-                signal.addEventListener('abort', () => { stream?.abort(new Error('command timeout')); });
+                signal.addEventListener('abort', () => {
+                  stream?.abort(new Error('command timeout'));
+                });
                 // send the starting byte
                 await byteStream(stream).write(encodeStartByteIndex(bytesReceived), { signal });
               }
@@ -79,7 +81,7 @@ export async function handleFileTransferProtocol({ node, peerAddress, expectedSi
               controller.error(new Error('File corrupted during transfer. Please try again.'));
             }
             if (fileTransferProgress) {
-              fileTransferProgress.set(Math.round(100 * size / expectedSize));
+              fileTransferProgress.set(Math.round((100 * size) / expectedSize));
             }
           }
           // Collect each chunk in the array
@@ -99,7 +101,7 @@ export async function handleFileTransferProtocol({ node, peerAddress, expectedSi
           console.error(err, { streamStatus: stream?.status });
           if (stream) {
             try {
-              await stream.close();    
+              await stream.close();
             } catch (streamCloseErr) {
               console.error(streamCloseErr);
             }

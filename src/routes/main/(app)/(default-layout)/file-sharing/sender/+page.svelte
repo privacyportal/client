@@ -26,7 +26,7 @@
   const MAX_FILE_SIZE = {
     enhanced: 30 * 1048476,
     basic: 1048476
-  }
+  };
 
   let nickname;
   let recipient;
@@ -55,10 +55,13 @@
   async function handleShareTarget() {
     if ($page.url.searchParams.has('share-target')) {
       if ($page.url.searchParams.has('err')) {
-        throw new CustomError({ message: checkErrorMessage($page.url.searchParams.get('err')) })
+        throw new CustomError({ message: checkErrorMessage($page.url.searchParams.get('err')) });
       } else {
         const keys = await caches.keys();
-        const fsCacheName = keys.filter((key) => key.includes('file-sharing')).sort().pop();
+        const fsCacheName = keys
+          .filter((key) => key.includes('file-sharing'))
+          .sort()
+          .pop();
         if (fsCacheName) {
           const fsCache = await caches.open(fsCacheName);
           const cachedFile = await fsCache.match('/pdf-file');
@@ -68,7 +71,7 @@
             const pdfFile = new File([blob], 'ephemeral.pdf', { type: blob.type });
             const maxFileSize = isEnhancedProtection ? MAX_FILE_SIZE.enhanced : MAX_FILE_SIZE.basic;
             if (pdfFile.size > maxFileSize) {
-              throw new CustomError({ message: `File size cannot exceed ${fmtSize(maxFileSize)}.${isEnhancedProtection ? '' : ' Please upgrade to share larger files.'}` })
+              throw new CustomError({ message: `File size cannot exceed ${fmtSize(maxFileSize)}.${isEnhancedProtection ? '' : ' Please upgrade to share larger files.'}` });
             }
             file = pdfFile;
           }
@@ -87,7 +90,6 @@
     } finally {
       loading = false;
     }
-    
   });
 </script>
 

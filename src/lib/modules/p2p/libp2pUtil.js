@@ -14,7 +14,7 @@ import { bufferToBase64, stringToBase64 } from '../auth';
 import { ORIGIN_DOMAIN, TURN_SERVERS } from '../constants';
 
 // match the webrtc data channel message size and account for overhead
-export const MAX_MESSAGE_SIZE = (16 * 1024) - 256;
+export const MAX_MESSAGE_SIZE = 16 * 1024 - 256;
 
 const PING_PROTOCOL_PREFIX = 'pportal';
 const RELAY_ADDRESS_REGEX = new RegExp(`^p2p-relay-[0-9]+.${ORIGIN_DOMAIN}$`);
@@ -230,7 +230,7 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
 export async function closeConnections(node, options) {
   const { abort } = { ...options };
   return await Promise.race([
-    Promise.all(node.getConnections().map((conn) => abort ? conn.abort() : conn.close())),
+    Promise.all(node.getConnections().map((conn) => (abort ? conn.abort() : conn.close()))),
     new Promise((_, reject) => setTimeout(() => reject(new Error('closing connections timeout')), 5000))
   ]).catch((err) => {
     console.error('failed to close connections', err);

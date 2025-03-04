@@ -1,4 +1,4 @@
-import { MAX_MESSAGE_SIZE } from "./libp2pUtil";
+import { MAX_MESSAGE_SIZE } from './libp2pUtil';
 
 export function createFixedSizeMessageTransform(messageSize = MAX_MESSAGE_SIZE, options) {
   const { startByteIndex } = { startByteIndex: 0, ...options };

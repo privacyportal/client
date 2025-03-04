@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { getXfaPageViewport, PixelsPerInch } from "pdfjs-dist";
-import { SimpleLinkService, XfaLayerBuilder } from "pdfjs-dist/web/pdf_viewer.mjs";
+import { getXfaPageViewport, PixelsPerInch } from 'pdfjs-dist';
+import { SimpleLinkService, XfaLayerBuilder } from 'pdfjs-dist/web/pdf_viewer.mjs';
 
 function getXfaHtmlForPrinting(printContainer, pdfDocument) {
   const xfaHtml = pdfDocument.allXfaHtml;
@@ -22,19 +22,19 @@ function getXfaHtmlForPrinting(printContainer, pdfDocument) {
   const scale = Math.round(PixelsPerInch.PDF_TO_CSS_UNITS * 100) / 100;
 
   for (const xfaPage of xfaHtml.children) {
-    const page = document.createElement("div");
-    page.className = "xfaPrintedPage";
+    const page = document.createElement('div');
+    page.className = 'xfaPrintedPage';
     printContainer.append(page);
 
     const builder = new XfaLayerBuilder({
       pdfPage: null,
       annotationStorage: pdfDocument.annotationStorage,
       linkService,
-      xfaHtml: xfaPage,
+      xfaHtml: xfaPage
     });
     const viewport = getXfaPageViewport(xfaPage, { scale });
 
-    builder.render(viewport, "print");
+    builder.render(viewport, 'print');
     page.append(builder.div);
   }
 }

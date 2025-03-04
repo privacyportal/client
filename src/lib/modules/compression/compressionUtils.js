@@ -1,4 +1,4 @@
-import { typedArrayToArrayBuffer } from "../utils";
+import { typedArrayToArrayBuffer } from '../utils';
 
 // This compressor works with a the compressionWorker
 class AsyncAbstractCompressor {
@@ -10,16 +10,16 @@ class AsyncAbstractCompressor {
   set onData(onDataCb) {
     this.worker.onmessage = (event) => {
       onDataCb(new Uint8Array(event.data.chunk), event.data.final, this.next);
-    }
+    };
   }
 
   set onError(onErrorCb) {
     this.worker.onerror = (_) => {
       onErrorCb(new Error('Worker task failed.'));
-    }
+    };
   }
 
-  push(chunk, next=undefined) {
+  push(chunk, next = undefined) {
     this.next = next;
     const chunkArrayBuffer = typedArrayToArrayBuffer(chunk);
     this.worker.postMessage({ chunk: chunkArrayBuffer, final: next !== undefined }, [chunkArrayBuffer]);
@@ -45,53 +45,53 @@ class AsyncDecompressor extends AsyncAbstractCompressor {
 }
 
 function fflateCommonTransformStream(asyncCompressor) {
-  return new TransformStream({
-    start(controller) {
-      asyncCompressor.onData = (chunk, final, next) => {
-        // console.log(`[${asyncCompressor.constructor.name}][ondata][${chunk.byteLength}]`, chunk, final);
-        controller.enqueue(chunk);
-        if (final) {
+  return new TransformStream(
+    {
+      start(controller) {
+        asyncCompressor.onData = (chunk, final, next) => {
+          // console.log(`[${asyncCompressor.constructor.name}][ondata][${chunk.byteLength}]`, chunk, final);
+          controller.enqueue(chunk);
+          if (final) {
+            asyncCompressor.terminate();
+            next();
+          }
+        };
+        asyncCompressor.onError = (err) => {
+          controller.error(err);
           asyncCompressor.terminate();
-          next();
-        }
-      }
-      asyncCompressor.onError = (err) => {
-        controller.error(err);
-        asyncCompressor.terminate();
-      }
-    },
-    transform(chunk, controller) {
-      // console.log(`[${asyncCompressor.constructor.name}][transform][${chunk.byteLength}]`, chunk);
-      try {
-        asyncCompressor.push(chunk);
-      } catch (err) {
-        controller.error(err);
-      }
-    },
-    async flush(controller) {
-      await new Promise(resolve => {
-        // console.log(`[${asyncCompressor.constructor.name}][flush]`);
+        };
+      },
+      transform(chunk, controller) {
+        // console.log(`[${asyncCompressor.constructor.name}][transform][${chunk.byteLength}]`, chunk);
         try {
-          asyncCompressor.push(new Uint8Array(0), resolve);
+          asyncCompressor.push(chunk);
         } catch (err) {
           controller.error(err);
         }
-      });
-      controller.terminate();
-    }
-  }, new CountQueuingStrategy({ highWaterMark: 1 }), new CountQueuingStrategy({ highWaterMark: 1 }));
+      },
+      async flush(controller) {
+        await new Promise((resolve) => {
+          // console.log(`[${asyncCompressor.constructor.name}][flush]`);
+          try {
+            asyncCompressor.push(new Uint8Array(0), resolve);
+          } catch (err) {
+            controller.error(err);
+          }
+        });
+        controller.terminate();
+      }
+    },
+    new CountQueuingStrategy({ highWaterMark: 1 }),
+    new CountQueuingStrategy({ highWaterMark: 1 })
+  );
 }
 
 export function fflateAsyncCompressionStream() {
-  return fflateCommonTransformStream(
-    new AsyncCompressor()
-  )
+  return fflateCommonTransformStream(new AsyncCompressor());
 }
 
 export function fflateAsyncDecompressionStream() {
-  return fflateCommonTransformStream(
-    new AsyncDecompressor()
-  )
+  return fflateCommonTransformStream(new AsyncDecompressor());
 }
 
 export async function createCompressionStream() {
