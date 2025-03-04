@@ -9,6 +9,10 @@
   export let mobile = false;
   export let noMobile = false;
   export let small = undefined;
+  export let alignLeft = undefined;
+  export let arrowColor = undefined;
+
+  const BUTTON_SELECTOR = 'button,button *';
 
   let opened = false;
   let opening = false;
@@ -30,8 +34,7 @@
   }
 
   function propagateIfButtonPress(e) {
-    // this won't work if the button contains an svg icon
-    if (e?.target?.tagName !== 'BUTTON' && e?.target?.parent?.tagName !== 'BUTTON') {
+    if (!e.target.matches(BUTTON_SELECTOR)) {
       e.stopPropagation();
     }
   }
@@ -57,12 +60,12 @@
           {/if}
         </span>
       {/if}
-      <ArrowDropDownIcon dimension={small ? '16.5' : '17'} />
+      <ArrowDropDownIcon dimension={small ? '16.5' : '17'} color={arrowColor} />
     </div>
   </div>
 
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div on:click={propagateIfButtonPress} class="dropdown-menu" class:has-title={!!title || !!$$slots.title}>
+  <div on:click={propagateIfButtonPress} class="dropdown-menu" class:has-title={!!title || !!$$slots.title} class:align-left={alignLeft}>
     <slot />
   </div>
 </div>
@@ -131,6 +134,10 @@
 
   .dropdown-menu.has-title {
     margin-top: calc(var(--height) + 0.1rem);
+  }
+
+  .dropdown-menu.align-left {
+    margin-left: 0px;
   }
 
   .dropdown.opened .dropdown-menu {

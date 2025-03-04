@@ -16,7 +16,7 @@
   export let clientId;
   export let domain;
 
-  $: domainChunks = (domain?.value || '').split('/');
+  $: domainChunks = (domain?.val || '').split('/');
 
   let verifying;
 

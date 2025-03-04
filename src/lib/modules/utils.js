@@ -180,12 +180,12 @@ export function typedArrayToArrayBuffer(uintXArray) {
   return uintXArray.buffer.slice(uintXArray.byteOffset, uintXArray.byteLength + uintXArray.byteOffset);
 }
 
-export async function retryOnFailure (action, maxRetryCount) {
+export async function retryOnFailure(action, maxRetryCount) {
   let lastError;
-  for (let i=0; i<maxRetryCount; i++) {
+  for (let i = 0; i < maxRetryCount; i++) {
     try {
       // delay retry by 100ms * retry number
-      await new Promise(resolve => setTimeout(resolve, i * 100));
+      await new Promise((resolve) => setTimeout(resolve, i * 100));
       return await action();
     } catch (err) {
       lastError = err;
