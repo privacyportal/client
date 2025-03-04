@@ -22,6 +22,7 @@
   let nonce = searchParams.get('nonce');
   let code_challenge = searchParams.get('code_challenge');
   let code_challenge_method = searchParams.get('code_challenge_method');
+  let response_mode = searchParams.get('response_mode');
 
   let client_info;
   let authorized_data;
@@ -79,7 +80,8 @@
             ...(code_challenge_method && { code_challenge_method }),
             ...(prompt && { prompt }),
             ...(state && { state }),
-            ...(nonce && { nonce })
+            ...(nonce && { nonce }),
+            ...(response_mode && { response_mode })
           }
         },
         {

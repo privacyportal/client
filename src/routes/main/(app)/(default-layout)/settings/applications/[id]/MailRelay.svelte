@@ -12,7 +12,7 @@
   import { deleteOAuthAppDomain, newOAuthAppDomain } from '$lib/modules/requests';
   import DomainVerification from './DomainVerification.svelte';
 
-  const MAX_SENDER_DOMAINS = 3;
+  const MAX_SENDER_DOMAINS = 6;
 
   export let selected;
   export let loading;
@@ -108,7 +108,7 @@
         <div class="gridline"></div>
         {#if domains?.length > 0}
           {#each domains as domain, index}
-            <h5 class="no-margin mono oneline">{domain.value.replace('/', '.')}</h5>
+            <h5 class="no-margin mono oneline">{domain.val.replace('/', '.')}</h5>
             <FlexContainer align_items="center" justify_content="flex-end" gap="0.1rem">
               {#if !domain?.verified_at}
                 <Button
@@ -121,12 +121,12 @@
                   xsmall
                   warning
                   light
-                  disabled={domain.value === 'localhost'}
+                  disabled={domain.val === 'localhost'}
                   rounded>verify</Button
                 >
               {/if}
-              <Button on:click={() => removeRegisteredDomain(domain.id)} padding="2px 7px" blendin rounded disabled={removingDomain || index < 1}
-                ><DeleteIcon dimension="20px" disabled={removingDomain || domains?.length < 2} /></Button
+              <Button on:click={() => removeRegisteredDomain(domain.id)} padding="2px 7px" blendin rounded disabled={removingDomain || domain.main || domain.urls.length}
+                ><DeleteIcon dimension="20px" disabled={removingDomain || domain.main || domain.urls.length} /></Button
               >
             </FlexContainer>
             <div class="gridline"></div>

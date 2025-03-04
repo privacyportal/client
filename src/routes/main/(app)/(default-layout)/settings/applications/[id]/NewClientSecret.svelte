@@ -87,6 +87,11 @@
         Generate
       {/if}
     </Button>
+
+    <GridContainer template_columns="18px auto" align_items="center" margin="0 0 0 0" gap="0.5rem">
+      <AnnouncementIcon color="var(--icon-color)" dimension="18px" />
+      <span class="note">You should <strong>NEVER</strong> use client secrets with public clients.</span>
+    </GridContainer>
   {/if}
 </FlexContainer>
 

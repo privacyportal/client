@@ -13,6 +13,7 @@
   export let disabled = undefined;
   export let margin = undefined;
   export let icon = undefined;
+  export let button = undefined;
   export let wide = undefined;
   export let step = '0.01';
   export let min = undefined;
@@ -32,6 +33,12 @@
 
   function init(el) {
     if (focus) el.focus();
+  }
+
+  $: {
+    if (inputElement && pattern) {
+      inputElement.setCustomValidity('');
+    }
   }
 </script>
 
@@ -54,6 +61,7 @@
     class:margin
     class:flexgrow
     class:icon
+    class:button
     class:wide
   />
 {:else if type === 'email'}
@@ -75,6 +83,7 @@
     class:margin
     class:flexgrow
     class:icon
+    class:button
     class:wide
   />
 {:else if type === 'password'}
@@ -96,6 +105,7 @@
     class:margin
     class:flexgrow
     class:icon
+    class:button
     class:wide
   />
 {:else if type === 'number'}
@@ -116,6 +126,7 @@
     class:margin
     class:flexgrow
     class:icon
+    class:button
     class:wide
   />
 {/if}
@@ -130,7 +141,7 @@
     color: var(--text-color);
   }
 
-  input:not(.icon).wide {
+  input:not(.icon):not(.button).wide {
     width: 100%;
   }
 
@@ -144,6 +155,13 @@
   input.icon.wide {
     margin-left: -26px;
     padding-left: 30px;
+  }
+
+  input.button {
+    width: 100%;
+    margin-left: 0px;
+    margin-right: -45px;
+    padding-right: 50px;
   }
 
   input:focus {

@@ -18,6 +18,7 @@
   export let loading;
   export let clientId;
   export let clientSecrets;
+  export let isPublicClient;
 
   let deleting = false;
   let clientIdCopied;
@@ -104,32 +105,34 @@
         </FlexContainer>
       </Button>
     </FlexContainer>
-    <FlexContainer column bgColor="var(--new-layer-color)" padding="0.5rem" rounded gap="0.5rem">
-      <FlexContainer align_items="center" justify_content="space-between">
-        <h5 class="no-margin">Client Secrets</h5>
-        <Button on:click={openGenerateClientSecretModal} height="auto" padding="0.3rem 0.5rem" primary rounded disabled={loading || clientSecrets?.length >= MAX_SECRETS}
-          ><small>Generate Secret</small></Button
-        >
+    {#if !isPublicClient}
+      <FlexContainer column bgColor="var(--new-layer-color)" padding="0.5rem" rounded gap="0.5rem">
+        <FlexContainer align_items="center" justify_content="space-between">
+          <h5 class="no-margin">Client Secrets</h5>
+          <Button on:click={openGenerateClientSecretModal} height="auto" padding="0.3rem 0.5rem" primary rounded disabled={loading || clientSecrets?.length >= MAX_SECRETS}
+            ><small>Generate Secret</small></Button
+          >
+        </FlexContainer>
+        <GridContainer margin="0 0 0 0" justify_items="stretch" template_columns="auto 1fr auto" align_items="center" gap="0.5rem 1rem">
+          <div class="gridline"></div>
+          {#if clientSecrets?.length}
+            {#each clientSecrets as clientSecret}
+              <KeyIcon dimension="20px" />
+              <FlexContainer column>
+                <h5 class="no-margin">{clientSecret.value}</h5>
+                <span class="sm">Added {formatDuration(clientSecret.created_at - $minuteTimer)}.</span>
+              </FlexContainer>
+              <Button on:click={() => deleteClientSecret(clientSecret.id)} padding="2px 7px" blendin rounded disabled={loading || deleting}>
+                <DeleteIcon dimension="20px" disabled={loading || deleting} />
+              </Button>
+              <div class="gridline"></div>
+            {/each}
+          {:else}
+            <span class="sm">No clients secrets have been created yet.</span>
+          {/if}
+        </GridContainer>
       </FlexContainer>
-      <GridContainer margin="0 0 0 0" justify_items="stretch" template_columns="auto 1fr auto" align_items="center" gap="0.5rem 1rem">
-        <div class="gridline"></div>
-        {#if clientSecrets}
-          {#each clientSecrets as clientSecret}
-            <KeyIcon dimension="20px" />
-            <FlexContainer column>
-              <h5 class="no-margin">{clientSecret.value}</h5>
-              <span class="sm">Added {formatDuration(clientSecret.created_at - $minuteTimer)}.</span>
-            </FlexContainer>
-            <Button on:click={() => deleteClientSecret(clientSecret.id)} padding="2px 7px" blendin rounded disabled={loading || deleting || clientSecrets?.length <= 1}>
-              <DeleteIcon dimension="20px" disabled={loading || clientSecrets.length <= 1} />
-            </Button>
-            <div class="gridline"></div>
-          {/each}
-        {:else}
-          <span class="sm">No clients secrets have been created yet.</span>
-        {/if}
-      </GridContainer>
-    </FlexContainer>
+    {/if}
   </FlexContainer>
 </FlexContainer>
 

@@ -533,26 +533,29 @@ export async function deleteApiKey({ key }) {
   });
 }
 
-export async function registerOAuthApplication({ name, url, callback_urls }) {
+export async function registerOAuthApplication({ name, url, callback_urls, isPublicClient = false, pkce = true }) {
   return await sendRequest({
     method: 'POST',
     path: '/oauth/apps/new',
     data: {
       name,
       url,
-      callback_urls
+      callback_urls,
+      public: isPublicClient,
+      pkce
     }
   });
 }
 
-export async function updateOAuthApplication({ id, name, url, callback_urls, pkce }) {
+export async function updateOAuthApplication({ id, name, url, callback_urls, isPublicClient, pkce }) {
   return await sendRequest({
     method: 'PATCH',
     path: `/oauth/apps/${id}`,
     data: {
       name,
       url,
-      callback_urls,
+      ...(callback_urls && { callback_urls }),
+      public: isPublicClient,
       pkce
     }
   });
