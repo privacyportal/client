@@ -40,16 +40,26 @@
     return { status: err?.status || 503, ...(err?.body?.error && { body: err.body }) };
   }
 
-  async function cancelAuthorization() {
-    redirectWithError({ error: 'access_denied', error_description: 'The user has denied your application access.' });
+  function respondWithData(redirectURI) {
+    if (response_mode === 'web_message') {
+      const uri = new URL(redirectURI);
+      window.opener.postMessage(Object.fromEntries(uri.searchParams.entries()), uri.origin);
+      return;
+    }
+    // respond with redirect
+    window.location.replace(redirectURI);
   }
 
-  function redirectWithError({ error, error_description }) {
+  async function cancelAuthorization() {
+    respondWithError({ error: 'access_denied', error_description: 'The user has denied your application access.' });
+  }
+
+  function respondWithError({ error, error_description }) {
     if (client_info?.redirect_uri || error === 'interaction_required') {
       const url = new URL(client_info?.redirect_uri || redirect_uri);
       url.searchParams.append('error', error);
       url.searchParams.append('error_description', error_description);
-      window.location.replace(url.toString());
+      return respondWithData(url.toString());
     } else {
       errorMessage = {
         error,
@@ -86,11 +96,11 @@
         },
         {
           fullError: true,
-          ...(prompt === 'login' && { handleUnauthorized: () => redirectWithError({ error: 'login_required' }) })
+          ...(prompt === 'login' && { handleUnauthorized: () => respondWithError({ error: 'login_required' }) })
         }
       );
 
-      if (data.redirect_uri) return window.location.replace(data.redirect_uri);
+      if (data.redirect_uri) return respondWithData(data.redirect_uri);
 
       // display consent page
       client_info = data.client_info;
@@ -101,15 +111,15 @@
       const { status, body } = await parseError(err);
 
       if (body?.error) {
-        return redirectWithError({ error: body.error, error_description: body.error_description });
+        return respondWithError({ error: body.error, error_description: body.error_description });
       } else if (status === 401) {
-        return redirectWithError({ error: 'access_denied', error_description: 'The server has denied your application access.' });
+        return respondWithError({ error: 'access_denied', error_description: 'The server has denied your application access.' });
       } else if (status === 503) {
-        return redirectWithError({ error: 'temporarily_unavailable', error_description: 'The server is temporarily unavailable. Please try again later.' });
+        return respondWithError({ error: 'temporarily_unavailable', error_description: 'The server is temporarily unavailable. Please try again later.' });
       }
 
       // catch-all error
-      return redirectWithError({ error: 'server_error', error_description: 'The server has encountered an issue.' });
+      return respondWithError({ error: 'server_error', error_description: 'The server has encountered an issue.' });
     }
   }
 
