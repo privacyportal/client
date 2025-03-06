@@ -51,7 +51,7 @@
   {#if isLocalUrl}
     <GridContainer template_columns="18px auto" align_items="center" gap="0.5rem">
       <AnnouncementIcon color="var(--info-color)" dimension="18px" />
-      <span class="note">Cannot enable Public Access with local domains.</span>
+      <span class="note">Cannot enable Public Access for local domains.</span>
     </GridContainer>
   {/if}
 </FlexContainer>
