@@ -32,6 +32,7 @@
     { label: 'Public', value: true }
   ];
 
+  const IS_LOCAL_DOMAIN_REGEX = new RegExp('^(?:localhost|.*.local)$');
   const IS_LOCAL_URL_REGEX = new RegExp('^http:|(?:https://(?:localhost\b.*|.*.local))$');
 
   let loading = false;
@@ -244,7 +245,7 @@
                       warning
                       light
                       rounded
-                      disabled={domainByURL[mainDomain.value] === 'localhost'}>verify</Button
+                      disabled={IS_LOCAL_DOMAIN_REGEX.test(domainByURL[mainDomain.value])}>verify</Button
                     >
                   {/if}
                 </GridContainer>
@@ -253,7 +254,8 @@
                   type="text"
                   name="url"
                   placeholder="https://<app.url>"
-                  pattern={!_isPublicClient ? '^http(s://.+|://(.+.local|localhost:[0-9]+))$' : '^https://.+$'}
+                  pattern="^http(s://.+|://(.+.local|localhost:[0-9]+))$"
+                  }
                   autocomplete="off"
                   bind:value={_url}
                   disabled={loading}
@@ -294,7 +296,7 @@
                         type="text"
                         name={`callback_url_${index}`}
                         placeholder="https://<app.url>/callback"
-                        pattern={isLocalUrl && !_isPublicClient ? '^http://(.+.local|localhost:[0-9]+)(/.*)?$' : '^https://.+$'}
+                        pattern={isLocalUrl ? '^http://(.+.local|localhost:[0-9]+)(/.*)?$' : '^https://.+$'}
                         autocomplete="off"
                         on:input={(e) => handleCallbackUrlInput(e, index)}
                         value={callback_url}
@@ -313,7 +315,7 @@
                         warning
                         light
                         rounded
-                        disabled={domainByURL[callback_url] === 'localhost'}>verify</Button
+                        disabled={IS_LOCAL_DOMAIN_REGEX.test(domainByURL[callback_url])}>verify</Button
                       >
                     </InputButton>
                     <Button on:click={() => removeCallbackUrl(index)} padding="2px 7px" blendin rounded disabled={_callback_urls.length <= 1}
@@ -353,7 +355,7 @@
         </FlexContainer>
 
         <Credentials {clientId} {clientSecrets} {isPublicClient} {loading} selected={selectedSection === 1} />
-        <AccessManagement {clientId} bind:published_at {loading} selected={selectedSection === 2} />
+        <AccessManagement {clientId} bind:published_at {loading} selected={selectedSection === 2} {isLocalUrl} />
         <MailRelay {clientId} {domains} {loading} selected={selectedSection === 3} />
         <SubscriptionPlan {clientId} {active_users} {relay_metrics} {plan} {fdm_tech} {loading} selected={selectedSection === 4} />
         <UsageMetrics {active_users} {relay_metrics} bind:published_at {loading} selected={selectedSection === 5} />
