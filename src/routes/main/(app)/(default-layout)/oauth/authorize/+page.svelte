@@ -44,6 +44,7 @@
     if (response_mode === 'web_message') {
       const uri = new URL(redirectURI);
       window.opener.postMessage(Object.fromEntries(uri.searchParams.entries()), uri.origin);
+      window.close();
       return;
     }
     // respond with redirect
