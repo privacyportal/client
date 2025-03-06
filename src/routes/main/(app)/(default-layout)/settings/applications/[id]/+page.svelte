@@ -348,7 +348,7 @@
             <FlexContainer onlymobile alwaysDisplay={selectedSection === 0}>
               <GridContainer template_columns="1fr 1fr" align_items="center" justify_items="stretch" gap="0.5rem">
                 <Button on:click={() => fetchApplication($page.params.id, true)} width="100%" height="100%" padding="0.5rem 0" basic border rounded disabled={loading}>Reset</Button>
-                <Button type="submit" width="100%" height="100%" padding="0.5rem 0" primary rounded disabled={loading || (isLocalUrl && isPublicClient)}>Save Changes</Button>
+                <Button type="submit" width="100%" height="100%" padding="0.5rem 0" primary rounded disabled={loading}>Save Changes</Button>
               </GridContainer>
             </FlexContainer>
           {/if}
