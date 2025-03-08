@@ -13,7 +13,7 @@ export const isEnhancedProtection = derived(
 );
 export const isBetaEnhancedProtection = derived([session, minuteTimer], ([$session, $minuteTimer]) => $session?.access?.beta === true || ($session?.access?.beta || 0) >= $minuteTimer);
 
-export const MONTHLY_PRICE = 400;
+export const MONTHLY_PRICE = 300;
 
 export const certificates = writable([]);
 export const issueCertLoading = writable(false);
