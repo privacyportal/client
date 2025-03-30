@@ -32,6 +32,8 @@
   let powChallenge;
   let powResult;
 
+  $: isOAuth = $page.url.pathname === '/oauth/authorize' && clientId;
+
   async function handleCodeVerification() {
     loading = true;
     try {
@@ -287,10 +289,10 @@
               {/if}
               <span class="xs"><a on:click={toggleAccountRecovery} href>Back to Sign In</a></span>
             {:else}
-              <Button on:click={handleSignIn} disabled={loading} rounded strong border={$isDarkMode}>
-                <FlexContainer column padding="0.7rem 0px">
+              <Button height={isOAuth ? "45px" : "35px"} on:click={handleSignIn} disabled={loading} rounded strong border={$isDarkMode}>
+                <FlexContainer column>
                   <span>Sign In</span>
-                  {#if $page.url.pathname === '/oauth/authorize' && clientId}
+                  {#if isOAuth}
                     <span class="xs">to continue to your application</span>
                   {/if}
                 </FlexContainer>
