@@ -3,22 +3,22 @@
   import Header from '$lib/components/common/Header.svelte';
   import Login from '$lib/components/common/Login.svelte';
   import Snackbar from '$lib/components/common/Snackbar.svelte';
-  import { isDarkBrowserColorScheme, isDarkMode, loadSession, session } from '$lib/stores/account';
-  import { isPublicPage, noHeader } from '$lib/stores/nav';
-  import { onMount } from 'svelte';
-
-  let isSignedIn = false;
-
-  $: isSignedIn = $session?.email && $session?.email_verified !== false;
+  import { isDarkBrowserColorScheme, isDarkMode, loadSession, isSignedInUnlocked, isSignedInBasic, session, loadMasterKey } from '$lib/stores/account';
+  import { navConfig } from '$lib/stores/nav';
+  import { onDestroy, onMount } from 'svelte';
 
   function detectBrowserColorScheme() {
     isDarkBrowserColorScheme.set(window.matchMedia('(prefers-color-scheme: dark)').matches);
   }
 
+  const unsubscribeSession = session.subscribe(loadMasterKey);
+
   onMount(() => {
     detectBrowserColorScheme();
     loadSession();
   });
+
+  onDestroy(unsubscribeSession);
 </script>
 
 <Snackbar />
@@ -30,7 +30,7 @@
         background: var(--dark-mode-color) !important;
       }
     </style>
-  {:else if $isPublicPage || !isSignedIn}
+  {:else if $navConfig.isPublicPage || !$isSignedInBasic}
     <style>
       body {
         background: var(--primary-color) !important;
@@ -40,12 +40,12 @@
 </svelte:head>
 
 <div id="body" class:dark-mode={$isDarkMode}>
-  {#if !$noHeader}
-    <Header isLoginScreen={!isSignedIn} />
+  {#if !$navConfig.noHeader}
+    <Header />
   {/if}
 
-  <main class:no-header={$noHeader}>
-    {#if $isPublicPage || isSignedIn}
+  <main class:no-header={$navConfig.noHeader} class:full-width={$navConfig.fullWidth}>
+    {#if $navConfig.isPublicPage || $isSignedInUnlocked || ($isSignedInBasic && $navConfig.isE2EEBypassedPage)}
       <slot />
     {:else}
       <Login headerHeight="var(--header-height)" />
@@ -75,6 +75,10 @@
     margin-left: auto;
     margin-right: auto;
     background-color: var(--base-color);
+  }
+
+  main.full-width {
+    max-width: 100%;
   }
 
   :global(main) {

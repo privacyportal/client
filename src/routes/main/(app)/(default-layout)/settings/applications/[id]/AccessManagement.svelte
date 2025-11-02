@@ -13,22 +13,23 @@
   export let isLocalUrl;
   let accessChanging;
 
-  async function handlePublicAccessToggle() {
+  async function handlePublicAccessToggle(event) {
+    const { newValue: publish, confirm, cancel } = event.detail;
     accessChanging = true;
     try {
-      if (!published_at) {
-        // deactivate
+      if (publish) {
         await publishOAuthApplication({ id: clientId });
         published_at = Date.now();
       } else {
-        // activate
         await unpublishOAuthApplication({ id: clientId });
         published_at = undefined;
       }
+      confirm();
     } catch (err) {
       /* do nothing */
       console.error(err);
       displayError(err);
+      cancel(err);
     } finally {
       accessChanging = false;
     }
@@ -44,7 +45,7 @@
   <FlexContainer column gap="0.15rem">
     <FlexContainer align_items="center" justify_content="space-between" gap="0.5rem">
       <h5 class="no-margin">Public Access</h5>
-      <Toggle on:click={handlePublicAccessToggle} size="13px" checked={!!published_at} disabled={accessChanging || loading || isLocalUrl} />
+      <Toggle on:beforechange={handlePublicAccessToggle} size="13px" checked={!!published_at} disabled={accessChanging || loading || isLocalUrl} asyncMode />
     </FlexContainer>
     <span class="xs">When enabled, any Privacy Portal user would be able to sign in to your application. By default, only you have access.</span>
   </FlexContainer>

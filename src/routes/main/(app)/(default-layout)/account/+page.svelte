@@ -10,6 +10,7 @@
   import { deleteAccount, upgradeAccount } from '$lib/modules/requests';
   import { MONTHLY_PRICE, isEnhancedProtection } from '$lib/stores/account';
   import DataExport from './DataExport.svelte';
+  import E2EEncryption from './E2EEncryption.svelte';
   import EmailSubscriptions from './EmailSubscriptions.svelte';
   import Preferences from './Preferences.svelte';
   import PrimaryEmailAddress from './PrimaryEmailAddress.svelte';
@@ -162,6 +163,7 @@
       </FlexContainer>
     </GridContainer>
   </FlexContainer>
+  <E2EEncryption />
   <Preferences />
   <EmailSubscriptions />
   <DataExport />

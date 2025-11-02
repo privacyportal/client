@@ -35,26 +35,29 @@
     }
   }
 
-  async function handleActivationToggle() {
+  async function handleActivationToggle(event) {
+    const { newValue: profileEnabled, confirm, cancel } = event.detail;
     loading = true;
     try {
-      if (profile.enabled) {
-        // deactivate
-        await deactivateProfile({ accountId: profile.acct_id, id: profile.id });
-        profilesStore.update((profilesArr) => {
-          return profilesArr.map((p) => (p.id === profile.id ? Object.assign(p, { enabled: undefined }) : p));
-        });
-      } else {
+      if (profileEnabled) {
         // activate
         await activateProfile({ accountId: profile.acct_id, id: profile.id });
         profilesStore.update((profilesArr) => {
           return profilesArr.map((p) => (p.id === profile.id || p.enabled === true ? Object.assign(p, { enabled: p.id === profile.id }) : p));
         });
+      } else {
+        // deactivate
+        await deactivateProfile({ accountId: profile.acct_id, id: profile.id });
+        profilesStore.update((profilesArr) => {
+          return profilesArr.map((p) => (p.id === profile.id ? Object.assign(p, { enabled: undefined }) : p));
+        });
       }
+      confirm();
     } catch (err) {
       /* do nothing */
       console.error(err);
       displayError(err);
+      cancel(err);
     } finally {
       loading = false;
     }
@@ -110,7 +113,7 @@
     </Button>
   </div>
 {:else}
-  <Toggle on:click={handleActivationToggle} size="12px" disabled={loading} checked={profile.enabled} />
+  <Toggle on:beforechange={handleActivationToggle} size="12px" disabled={loading} checked={profile.enabled} asyncMode />
 {/if}
 <button
   class="key"

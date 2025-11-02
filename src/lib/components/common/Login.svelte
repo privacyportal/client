@@ -7,11 +7,12 @@
   import POW from '$lib/components/common/POW.svelte';
   import Section from '$lib/components/common/Section.svelte';
   import Logo from '$lib/components/svg/Logo.svelte';
-  import { base64ToBuffer, bufferToBase64 } from '$lib/modules/auth';
+  import { base64ToBuffer, bufferToBase64, clearBuffer } from '$lib/modules/auth';
   import { LANDING_CLIENT_URL } from '$lib/modules/constants';
+  import { addE2EEKeyWithPasskey_PreAuthenticated, unwrapMasterKeyWithPasskey, unwrapMasterKeyWithPassword } from '$lib/modules/crypto/e2eeUtil';
   import { displayError } from '$lib/modules/errors';
   import { recoverAccount, recoverAccountChallenge, requestAccountRecoveryCode, resendCode, signIn, signInChallenge, signUp, signUpChallenge, verifyEmail } from '$lib/modules/requests';
-  import { isDarkMode, session } from '$lib/stores/account';
+  import { e2eeMasterKey, isDarkMode, session, storeMasterKey, loadingE2EEMasterKey, e2eePwdMkey } from '$lib/stores/account';
   import { showSnackbar } from '$lib/stores/snackbar';
   import InfoIcon from '../materialIcons/InfoIcon.svelte';
   import GridContainer from './GridContainer.svelte';
@@ -31,6 +32,9 @@
   let clientId = $page.url.searchParams.get('client_id');
   let powChallenge;
   let powResult;
+  let password;
+  let e2eePasskeyCandidate;
+  let shouldSetupPasskey;
 
   $: isOAuth = $page.url.pathname === '/oauth/authorize' && clientId;
 
@@ -216,9 +220,6 @@
 
       console.log(credential);
 
-      // Uncomment to Retrieve PRF results
-      // const prfResult = credential.getClientExtensionResults()?.prf?.results;
-
       const res = await signIn({
         credential: {
           id: credential.id,
@@ -234,6 +235,30 @@
       });
 
       console.log(res, res.headers);
+
+      const { mkey } = res.data;
+      switch (mkey?.type) {
+        case 'passkey': {
+          let prfSecretBuffer = credential.getClientExtensionResults()?.prf?.results?.first;
+          const masterKey = await unwrapMasterKeyWithPasskey(mkey, prfSecretBuffer);
+          e2eeMasterKey.set(masterKey);
+          storeMasterKey(masterKey);
+          clearBuffer(prfSecretBuffer);
+          prfSecretBuffer = undefined;
+          break;
+        }
+        case 'pwd': {
+          e2eePwdMkey.set(mkey);
+          const prfSecret = credential.getClientExtensionResults()?.prf?.results?.first;
+          if (prfSecret) {
+            e2eePasskeyCandidate = {
+              id: bufferToBase64(credential.rawId),
+              prfSecret: credential.getClientExtensionResults()?.prf?.results?.first
+            };
+          }
+          break;
+        }
+      }
     } catch (err) {
       /* do nothing */
       console.error(err);
@@ -242,13 +267,37 @@
       loading = false;
     }
   }
+
+  async function handleE2EEPassword() {
+    try {
+      loading = true;
+      const fullPwd = `${$session.sub}.${password}`;
+      const masterKey = await unwrapMasterKeyWithPassword($e2eePwdMkey, fullPwd);
+      e2eeMasterKey.set(masterKey);
+      storeMasterKey(masterKey);
+
+      if (shouldSetupPasskey && e2eePasskeyCandidate) {
+        // configure authenticator
+        await addE2EEKeyWithPasskey_PreAuthenticated($session.sub, fullPwd, $e2eePwdMkey, masterKey, e2eePasskeyCandidate.id, e2eePasskeyCandidate.prfSecret);
+      }
+    } catch (err) {
+      displayError(err);
+    } finally {
+      loading = false;
+      shouldSetupPasskey = false;
+      if (e2eePasskeyCandidate?.prfSecret) {
+        clearBuffer(e2eePasskeyCandidate.prfSecret);
+      }
+      e2eePasskeyCandidate = undefined;
+    }
+  }
 </script>
 
 <div id="login" style:--header-height={headerHeight}>
   <Section height="100%" bgColor={$isDarkMode ? 'var(--outer-bg-color)' : 'var(--primary-color)'} color="var(--primary-text-color)" textCentered="true">
     <FlexContainer column gap="2rem" width="auto" color="inherit">
       <div>
-        <Logo dimension="12rem" color="var(--primary-color)" opacity="1" animated={loading || $session === undefined} />
+        <Logo dimension="12rem" color="var(--primary-color)" opacity="1" animated={loading || $session === undefined || $loadingE2EEMasterKey} />
         <h2>Privacy Portal</h2>
       </div>
 
@@ -257,20 +306,31 @@
           {#if $session?.email}
             {#if $session?.email_verified === false}
               <Form on:submit={handleCodeVerification}>
-                <FlexContainer column gap="0.25rem" color="inherit">
+                <FlexContainer column gap="0.35rem" color="inherit">
                   <Input type="text" name="code" placeholder="Verification Code" autocomplete="off" bind:value={code} disabled={loading} />
                   <Button type="submit" disabled={loading} rounded>Submit</Button>
                   <p><a on:click={handleResendCode} href>resend code</a></p>
                 </FlexContainer>
               </Form>
-            {:else}
-              <p>Already Signed in</p>
+            {:else if $session?.e2ee && $e2eePwdMkey}
+              <Form on:submit={handleE2EEPassword}>
+                <FlexContainer column gap="0.35rem" color="inherit">
+                  <Input type="password" name="pwd" placeholder="E2EE Password" autocomplete="off" bind:value={password} disabled={loading} />
+                  <Button type="submit" disabled={loading} rounded>Unlock Account</Button>
+                  {#if !!e2eePasskeyCandidate}
+                    <FlexContainer align_items="center" color="inherit" padding="0.5rem" gap="0.5rem">
+                      <input type="checkbox" bind:checked={shouldSetupPasskey} />
+                      <span class="xs">Enable E2EE on this Passkey</span>
+                    </FlexContainer>
+                  {/if}
+                </FlexContainer>
+              </Form>
             {/if}
           {:else if showSignIn || !allowSignUp}
             {#if showAccountRecovery}
               {#if showRecoveryForm}
                 <Form on:submit={handleSubmitRecoveryCode}>
-                  <FlexContainer column gap="0.25rem">
+                  <FlexContainer column gap="0.35rem">
                     <Input type="text" name="code" placeholder="Verification Code" autocomplete="off" bind:value={code} disabled={loading} />
                     {#if showTOTP}
                       <Input type="text" name="token" placeholder="2FA Token" autocomplete="off" bind:value={totpToken} disabled={loading} />
@@ -281,7 +341,7 @@
                 </Form>
               {:else}
                 <Form on:submit={handleRecoverAccount}>
-                  <FlexContainer column gap="0.25rem">
+                  <FlexContainer column gap="0.35rem">
                     <Input type="email" name="email" placeholder="Email" bind:value={email} disabled={loading} />
                     <Button type="submit" disabled={loading} rounded strong border={$isDarkMode}>Recover Account</Button>
                   </FlexContainer>
@@ -307,7 +367,7 @@
             {/if}
           {:else}
             <Form on:submit={handleSignUp}>
-              <FlexContainer column gap="0.25rem">
+              <FlexContainer column gap="0.35rem">
                 <Input type="email" name="email" placeholder="Email" bind:value={email} disabled={loading} />
                 <POW {powChallenge} on:verified={handlePOWVerified} on:not_verified={handlePOWVerificationFailed} />
                 <Button type="submit" disabled={loading} rounded strong border={$isDarkMode}>Sign Up</Button>

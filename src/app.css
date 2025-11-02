@@ -52,6 +52,7 @@
   --info-contrasted-color: #7b6502;
   --warning-color: #e08a00;
   --danger-color: #b73933;
+  --diff-color: #ac6718;
   --translucent-primary-color: #00729c33;
 
   /* text colors are theme dependent */
@@ -251,11 +252,14 @@ span.note {
   font-family: var(--font-mono);
 }
 
-span.xs {
+span.xs,
+p.xs {
   font-size: x-small;
 }
 
-span.sm {
+span.sm,
+li.sm,
+p.sm {
   font-size: small;
 }
 
@@ -265,6 +269,10 @@ span.sm {
 
 .align-self-center {
   align-self: center;
+}
+
+.start {
+  text-align: start;
 }
 
 .center {
@@ -298,6 +306,10 @@ svg#logo.deactivated {
   display: none !important;
 }
 
+.grid-span-2 {
+  grid-column: span 2;
+}
+
 @supports (-webkit-touch-callout: none) {
   @media (display-mode: browser) {
     .ios-browser {
@@ -321,5 +333,11 @@ svg#logo.deactivated {
 @media screen and (min-width: 979.01px) {
   .mobile {
     display: none !important;
+  }
+}
+
+@keyframes rotate {
+  to {
+    transform: rotate(360deg);
   }
 }

@@ -1,15 +1,18 @@
 <script>
+  export let element = undefined;
   export let inherit = false;
   export let width = '100%';
 
   function checkValidity(event) {
     const { target } = event;
-    target.setCustomValidity('');
-    target.checkValidity();
+    if (!target?.dataset?.customValidate) {
+      target.setCustomValidity('');
+      target.checkValidity();
+    }
   }
 </script>
 
-<form on:submit|preventDefault on:changed={checkValidity} on:input={checkValidity} class:inherit style:--width={width}>
+<form bind:this={element} on:submit|preventDefault on:changed={checkValidity} on:input={checkValidity} class:inherit style:--width={width}>
   <slot />
 </form>
 

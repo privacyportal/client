@@ -19,7 +19,7 @@
     { label: 'Current Device', value: 'current' },
     { label: 'Other Device', value: 'other' }
   ];
-  let selectedNewAuthenticatorType;
+  let selectedNewAuthenticatorType = newAuthenticatorOptions[0].value;
   let url;
   let id;
   let credentialCreationOptions;

@@ -10,20 +10,27 @@
   export let align_items = 'auto';
   export let justify_items = 'auto';
   export let bgColor = 'auto';
+  export let color = 'auto';
   export let border = undefined;
   export let rounded = undefined;
   export let nooverflow = undefined;
   export let zeroFlexShrink = undefined;
+  export let relative = undefined;
+  export let globalClass = [];
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="container"
+  class={['container', ...(globalClass || [])].join(' ')}
+  on:click
   style:--gap={gap}
   style:--margin={margin}
   style:--padding={padding}
   style:--width={width}
   style:--height={height}
   style:--bg-color={bgColor}
+  style:--color={color}
   style:--grid-template-columns={template_columns}
   style:--mobile-grid-template-columns={mobile_template_columns || template_columns}
   style:--grid-template-rows={template_rows}
@@ -33,6 +40,7 @@
   class:rounded
   class:nooverflow
   class:zero-flex-shrink={zeroFlexShrink}
+  class:relative
 >
   <slot />
 </div>
@@ -50,6 +58,7 @@
     align-items: var(--align-items);
     justify-items: var(--justify-items);
     background-color: var(--bg-color);
+    color: var(--color);
   }
 
   .border {
@@ -67,6 +76,10 @@
 
   .zero-flex-shrink {
     flex-shrink: 0;
+  }
+
+  .relative {
+    position: relative;
   }
 
   @media screen and (max-width: 979px) {

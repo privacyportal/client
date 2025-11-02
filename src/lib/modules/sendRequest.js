@@ -1,16 +1,28 @@
 import { goto } from '$app/navigation';
 import { clear as storageClear, read as storageRead, storeKeyFromObject } from '$lib/modules/storage';
-import { session } from '$lib/stores/account';
+import { clearE2EEData, session } from '$lib/stores/account';
 import { showSnackbar } from '$lib/stores/snackbar';
 import FileSaver from 'file-saver';
 import { base64ToBuffer, bufferToBase64, parseJwtBody } from './auth';
 import { AT_HEADER, ENDPOINT, RT_HEADER } from './constants';
 import { CustomError, DEFAULT_ERROR_MESSAGE } from './errors';
 
-export default async function sendRequest(params, options = { displayError: true, fullError: false, downloadFile: undefined, accessToken: undefined }) {
+export function formatCredentialHeaders(credential) {
+  return {
+    credentialId: credential.id,
+    rawId: bufferToBase64(credential.rawId),
+    // response below
+    authenticatorData: bufferToBase64(credential.response.authenticatorData),
+    clientDataJSON: bufferToBase64(credential.response.clientDataJSON),
+    signature: bufferToBase64(credential.response.signature),
+    userHandle: bufferToBase64(credential.response.userHandle)
+  };
+}
+
+export default async function sendRequest(params, options = { displayError: true, fullError: false, downloadFile: undefined, accessToken: undefined, skipAuth: false }) {
   const { method, path, extraHeaders, data, rawBody } = params;
 
-  const { displayError, fullError, handleUnauthorized, downloadFile, accessToken } = options;
+  const { displayError, fullError, handleUnauthorized, downloadFile, accessToken, skipAuth } = options;
 
   const body = rawBody ? data : JSON.stringify(data);
 
@@ -24,7 +36,7 @@ export default async function sendRequest(params, options = { displayError: true
     Object.assign(headers, {
       Authorization: `Bearer ${accessToken}`
     });
-  } else {
+  } else if (!skipAuth) {
     // use token from storage
     const AT_HEADER_VALUE = storageRead(AT_HEADER);
     const RT_HEADER_VALUE = storageRead(RT_HEADER);
@@ -42,7 +54,7 @@ export default async function sendRequest(params, options = { displayError: true
     method,
     body,
     headers
-  }).catch((_) => ({ ok: false }));
+  }).catch(() => ({ ok: false }));
 
   if (!res.ok) {
     let errorMessage = { message: DEFAULT_ERROR_MESSAGE };
@@ -71,15 +83,7 @@ export default async function sendRequest(params, options = { displayError: true
             method,
             path,
             ...(params?.data ? { data: params.data } : {}),
-            extraHeaders: {
-              credentialId: credential.id,
-              rawId: bufferToBase64(credential.rawId),
-              // response below
-              authenticatorData: bufferToBase64(credential.response.authenticatorData),
-              clientDataJSON: bufferToBase64(credential.response.clientDataJSON),
-              signature: bufferToBase64(credential.response.signature),
-              userHandle: bufferToBase64(credential.response.userHandle)
-            }
+            extraHeaders: formatCredentialHeaders(credential)
           },
           options
         );
@@ -91,6 +95,7 @@ export default async function sendRequest(params, options = { displayError: true
       } else {
         // Unauthorized => sign out
         session.set(null);
+        clearE2EEData();
         storageClear();
         errorMessage = { message: 'Session timed out.' };
         goto('/');
@@ -133,6 +138,7 @@ export default async function sendRequest(params, options = { displayError: true
     if (result.headers['x-pp-so']) {
       // server triggered sign out
       session.set(null);
+      clearE2EEData();
       storageClear();
       goto('/');
       return;

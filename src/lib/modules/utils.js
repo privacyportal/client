@@ -6,6 +6,12 @@ const DAY = 24 * HOUR;
 const MONTH = 30 * DAY;
 const YEAR = 365 * DAY;
 
+export function timestampToIsoDate(timestamp) {
+  if (timestamp === undefined) return undefined;
+  const date = new Date(timestamp);
+  return date.toISOString().slice(0, 10);
+}
+
 export function formatDate(timestamp, options) {
   if (timestamp === undefined && options?.default) return options.default;
   return new Date(timestamp).toLocaleString('en-US', {
@@ -92,6 +98,12 @@ export function convertToHostname(url) {
 
 export function writeValueToClipboard(value) {
   setTimeout(async () => await navigator.clipboard.writeText(value));
+}
+
+export function addDaysToTimestamp(timestamp, amount = 1) {
+  const d = new Date(timestamp);
+  d.setUTCDate(d.getUTCDate() + amount);
+  return d.getTime();
 }
 
 export function getMonthStartTS() {
@@ -192,4 +204,8 @@ export async function retryOnFailure(action, maxRetryCount) {
     }
   }
   throw lastError;
+}
+
+export function slugify(str = '') {
+  return str.toLowerCase().replace(/ /g, '-').replace(/\./g, '');
 }

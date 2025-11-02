@@ -9,16 +9,19 @@
   $: allowUnsafeReply = (account?.unsafe_reply || 'reject') === 'allow';
   let loading = false;
 
-  async function handleAllowUnsafeRepliesToggle() {
+  async function handleAllowUnsafeRepliesToggle(event) {
+    const { newValue: allowUnsafeReply, confirm, cancel } = event.detail;
     try {
       loading = true;
-      const unsafe_reply = allowUnsafeReply ? 'reject' : 'allow';
+      const unsafe_reply = allowUnsafeReply ? 'allow' : 'reject';
       await patchRelayAccountSettings({ accountId: account.id, data: { unsafe_reply } });
       relayAccountsStore.update((accounts) => accounts.map((acct) => (acct.id === account.id ? { ...acct, unsafe_reply } : acct)));
+      confirm();
     } catch (err) {
       /* do nothing */
       console.error(err);
       displayError(err);
+      cancel(err);
     } finally {
       loading = false;
     }
@@ -32,7 +35,7 @@
       <FlexContainer column gap="0.1rem">
         <FlexContainer align_items="center" justify_content="space-between">
           <h6 class="no-margin">Allow Unsafe Replies</h6>
-          <Toggle on:click={handleAllowUnsafeRepliesToggle} size="12px" danger disabled={loading} checked={allowUnsafeReply} />
+          <Toggle on:beforechange={handleAllowUnsafeRepliesToggle} size="12px" danger disabled={loading} checked={allowUnsafeReply} asyncMode />
         </FlexContainer>
         <span class="xs">Sending new replies to emails you previously sent could leak your personal information. By default, Mail Relay blocks unsafe email replies.</span>
       </FlexContainer>

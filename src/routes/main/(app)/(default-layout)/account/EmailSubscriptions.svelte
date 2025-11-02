@@ -2,21 +2,29 @@
   import FlexContainer from '$lib/components/common/FlexContainer.svelte';
   import Toggle from '$lib/components/common/Toggle.svelte';
   import { LANDING_CLIENT_URL } from '$lib/modules/constants';
+  import { displayError } from '$lib/modules/errors';
   import { activateEmailSubscription, deactivateEmailSubscription, getEmailSubscriptions } from '$lib/modules/requests';
   import { onMount } from 'svelte';
 
   let loading = false;
   let emailSubscriptions;
 
-  async function updateEmailSubscriptionToggle(id, newState) {
-    try {
-      loading = true;
-      // toggle state
-      newState ? await activateEmailSubscription(id) : await deactivateEmailSubscription(id);
-      emailSubscriptions = emailSubscriptions.map((item) => (item.id === id ? { ...item, enabled: newState } : item));
-    } finally {
-      loading = false;
-    }
+  function updateEmailSubscriptionToggle(id) {
+    return async function (event) {
+      const { newValue, confirm, cancel } = event.detail;
+      try {
+        loading = true;
+        // toggle state
+        newValue ? await activateEmailSubscription(id) : await deactivateEmailSubscription(id);
+        emailSubscriptions = emailSubscriptions.map((item) => (item.id === id ? { ...item, enabled: newValue } : item));
+        confirm();
+      } catch (err) {
+        displayError(err);
+        cancel(err);
+      } finally {
+        loading = false;
+      }
+    };
   }
 
   async function fetchEmailSubscriptions() {
@@ -43,7 +51,7 @@
         <FlexContainer column>
           <FlexContainer align_items="center" justify_content="space-between">
             <h6 class="no-margin">{name} <small>({rate})</small></h6>
-            <Toggle on:click={() => updateEmailSubscriptionToggle(id, !enabled)} size="12px" disabled={loading} checked={enabled} />
+            <Toggle on:beforechange={updateEmailSubscriptionToggle(id)} size="12px" disabled={loading} checked={enabled} asyncMode />
           </FlexContainer>
           <span class="xs">{description}</span>
         </FlexContainer>

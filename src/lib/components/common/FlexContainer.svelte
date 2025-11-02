@@ -27,6 +27,7 @@
   export let onlymobile = undefined;
   export let alwaysDisplay = undefined;
   export let relative = undefined;
+  export let globalClass = [];
 
   let paddingMobile = padding
     .split(' ')
@@ -34,9 +35,12 @@
     .join(' ');
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="container"
+  class={['container', ...(globalClass || [])].join(' ')}
   bind:this={element}
+  on:click
   style:--gap={gap}
   style:--width={width}
   style:--height={height}

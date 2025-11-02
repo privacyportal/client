@@ -33,27 +33,25 @@ export async function getAddresses(search, filter, fwdToFilter, sortBy, previous
   });
 }
 
-export async function createAddress({ label, address, note, token }) {
+export async function createAddress({ label, address, note, token, ct, srch }) {
   return await sendRequest({
     method: 'POST',
     path: '/email-relay/addresses/new',
     data: {
-      label,
       address,
-      note,
-      token
+      token,
+      ...(ct ? { ct, srch } : { label, note })
     }
   });
 }
 
-export async function editAddress({ id, label, note }) {
+export async function editAddress({ id, label, note, ct, srch }) {
   console.log({ id, label, note });
   return await sendRequest({
     method: 'PATCH',
     path: `/email-relay/addresses/${id}`,
     data: {
-      label,
-      note: note || ''
+      ...(ct ? { ct, srch } : { label, note })
     }
   });
 }
@@ -724,5 +722,67 @@ export async function createFileSharingSession({ peer_id, token, size, hash }) {
       hash,
       token
     }
+  });
+}
+
+export async function getE2EEKeys({ type } = {}) {
+  const query = type ? `?type=${type}` : '';
+  return await sendRequest({
+    method: 'GET',
+    path: `/e2ee/keys${query}`
+  });
+}
+
+export async function addE2EEKey({ data }, { extraHeaders }) {
+  return await sendRequest({
+    method: 'POST',
+    path: `/e2ee/keys/new`,
+    data,
+    extraHeaders
+  });
+}
+
+export async function deleteE2EEKey({ passkey_id }) {
+  return await sendRequest({
+    method: 'POST',
+    path: `/e2ee/keys/delete`,
+    data: {
+      passkey_id
+    }
+  });
+}
+
+export async function updateE2EEKey({ data }, { extraHeaders } = {}) {
+  return await sendRequest({
+    method: 'PUT',
+    path: `/e2ee/keys/main`,
+    data,
+    extraHeaders
+  });
+}
+
+export async function requestE2EEKeysChallenge({ passkey_id } = {}) {
+  return await sendRequest({
+    method: 'POST',
+    path: `/e2ee/keys/challenge`,
+    data: {
+      ...(passkey_id && { passkey_id })
+    }
+  });
+}
+
+export async function addE2EEServiceKey({ service, data }, { extraHeaders }) {
+  return await sendRequest({
+    method: 'POST',
+    path: `/e2ee/keys/${service}/new`,
+    data,
+    extraHeaders
+  });
+}
+
+export async function getE2EEServiceKeys({ service }) {
+  return await sendRequest({
+    method: 'GET',
+    path: `/e2ee/keys/${service}`
   });
 }

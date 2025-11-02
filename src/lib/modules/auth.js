@@ -12,9 +12,9 @@ export function bufferToBase64(buffer, { url } = { url: false }) {
   return url ? base64ToBase64Url(result) : result;
 }
 
-export function base64ToBuffer(string) {
+export function base64ToBuffer(string, { url } = { url: false }) {
   return new Uint8Array(
-    atob(string)
+    atob(url ? base64UrlToBase64(string) : string)
       .split('')
       .map((c) => c.charCodeAt(0))
   ).buffer;
@@ -44,4 +44,9 @@ export function stringToBase64(input, { url } = { url: false }) {
 // works for both base64 and base64url
 export function base64ToString(input) {
   return atob(base64UrlToBase64(input));
+}
+
+export function clearBuffer(bufferSource) {
+  const uint8Array = bufferSource instanceof ArrayBuffer ? new Uint8Array(bufferSource) : new Uint8Array(bufferSource.buffer, bufferSource.byteOffset, bufferSource.byteLength);
+  uint8Array.fill(0);
 }

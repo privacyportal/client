@@ -48,6 +48,8 @@
       <slot name="hero" />
     {/if}
 
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div on:click={toggleDropdown} class="title">
       {#if $$slots.title}
         <slot name="title" />
@@ -65,6 +67,7 @@
   </div>
 
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div on:click={propagateIfButtonPress} class="dropdown-menu" class:has-title={!!title || !!$$slots.title} class:align-left={alignLeft}>
     <slot />
   </div>
