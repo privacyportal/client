@@ -15,7 +15,6 @@
   import CloseIcon from '$lib/components/materialIcons/CloseIcon.svelte';
   import ShareIcon from '$lib/components/materialIcons/ShareIcon.svelte';
   import Button from '$lib/components/common/Button.svelte';
-  import Drawer from '$lib/components/common/Drawer.svelte';
   import Dropdown from '$lib/components/common/Dropdown.svelte';
   import FlexContainer from '$lib/components/common/FlexContainer.svelte';
   import Modal from '$lib/components/common/Modal.svelte';
@@ -27,12 +26,11 @@
   import PersonIcon from '$lib/components/materialIcons/PersonIcon.svelte';
   import { LANDING_CLIENT_URL } from '$lib/modules/constants';
   import { gotoExt, gotoPage } from '$lib/modules/routingUtils';
-  import { endSession, isDarkMode, isEnhancedProtection, session } from '$lib/stores/account';
-  import { logoColor, navBackButton, showPrintButton } from '$lib/stores/nav';
+  import { endSession, isDarkMode, isEnhancedProtection, isSignedInBasic, isSignedInUnlocked, session } from '$lib/stores/account';
+  import { navBackButton, navConfig } from '$lib/stores/nav';
   import { getContext, setContext } from 'svelte';
   import PrintIcon from '../materialIcons/PrintIcon.svelte';
-
-  export let isLoginScreen = false;
+  import NavDrawer from '$lib/components/common/NavDrawer.svelte';
 
   let accountModalOpened;
   let appsModalOpened;
@@ -90,7 +88,7 @@
   }}
 />
 
-<header class:login-screen={isLoginScreen} class:dark-mode={$isDarkMode}>
+<header class:login-screen={!$isSignedInUnlocked} class:dark-mode={$isDarkMode} class:full-width={$navConfig.fullWidth}>
   <Modal bind:open={accountModalOpened} minWidth="250px">
     <h5 class="no-margin oneline">{emailLocalPart}</h5>
     <p class="no-margin oneline">{$session?.email}</p>
@@ -103,10 +101,12 @@
     </div>
     <hr class="divider" />
     <FlexContainer column gap="0.5rem">
-      {#if $session?.email_verified !== false}
+      {#if $isSignedInBasic}
         <FlexContainer column rounded overflowhidden gap="1px">
-          <Button on:click={gotoPage('/account')} basic>Account</Button>
-          <Button on:click={gotoPage('/settings/security')} basic>Security</Button>
+          {#if $isSignedInUnlocked}
+            <Button on:click={gotoPage('/account')} basic>Account</Button>
+            <Button on:click={gotoPage('/settings/security')} basic>Security</Button>
+          {/if}
           <Button on:click={gotoPage('/support')} basic>Get Help</Button>
         </FlexContainer>
       {/if}
@@ -157,68 +157,74 @@
       </li>
     </ol>
   </Modal>
-  <Drawer bind:open={drawerOpened}>
-    {#if $session?.email && $session?.email_verified !== false}
+  <NavDrawer bind:open={drawerOpened} mobile>
+    {#if $isSignedInBasic}
       <FlexContainer column height="calc(100vh - 50px - 2rem)" padding="0 0 0.5rem 0" justify_content="space-between">
         <FlexContainer column gap="1.5rem">
           <FlexContainer column gap="0.5rem">
             <h5 class="no-margin">General Settings</h5>
             <FlexContainer column rounded border overflowhidden zeroFlexShrink gap="2px">
-              <Button on:click={closeOnExit(gotoPage('/account'))} flexgrow ascolumn align_items="flex-start">Account</Button>
-              <Button on:click={closeOnExit(gotoPage('/settings/security'))} flexgrow ascolumn align_items="flex-start">Security</Button>
+              {#if $isSignedInUnlocked}
+                <Button on:click={closeOnExit(gotoPage('/account'))} flexgrow ascolumn align_items="flex-start">Account</Button>
+                <Button on:click={closeOnExit(gotoPage('/settings/security'))} flexgrow ascolumn align_items="flex-start">Security</Button>
+              {/if}
               <Button on:click={closeOnExit(gotoPage('/support'))} flexgrow ascolumn align_items="flex-start">Get Help</Button>
             </FlexContainer>
           </FlexContainer>
 
-          <FlexContainer column gap="0.5rem" padding="0 0 0 0rem">
-            <h5 class="no-margin">Mail Relay</h5>
-            <FlexContainer column rounded border overflowhidden zeroFlexShrink gap="2px">
-              <Button on:click={closeOnExit(gotoPage('/mail-relay'))} flexgrow ascolumn align_items="flex-start">Privacy Aliases</Button>
-              <Button on:click={closeOnExit(gotoPage('/mail-relay/settings'))} flexgrow ascolumn align_items="flex-start">Relay Settings</Button>
+          {#if $isSignedInUnlocked}
+            <FlexContainer column gap="0.5rem" padding="0 0 0 0rem">
+              <h5 class="no-margin">Mail Relay</h5>
+              <FlexContainer column rounded border overflowhidden zeroFlexShrink gap="2px">
+                <Button on:click={closeOnExit(gotoPage('/mail-relay'))} flexgrow ascolumn align_items="flex-start">Privacy Aliases</Button>
+                <Button on:click={closeOnExit(gotoPage('/mail-relay/settings'))} flexgrow ascolumn align_items="flex-start">Relay Settings</Button>
+              </FlexContainer>
             </FlexContainer>
-          </FlexContainer>
 
-          <FlexContainer column gap="0.5rem" padding="0 0 0 0rem">
-            <h5 class="no-margin">File Sharing</h5>
-            <FlexContainer column rounded border overflowhidden zeroFlexShrink gap="2px">
-              <Button on:click={closeOnExit(gotoPage('/file-sharing/sender'))} flexgrow ascolumn align_items="flex-start">Share PDF</Button>
+            <FlexContainer column gap="0.5rem" padding="0 0 0 0rem">
+              <h5 class="no-margin">File Sharing</h5>
+              <FlexContainer column rounded border overflowhidden zeroFlexShrink gap="2px">
+                <Button on:click={closeOnExit(gotoPage('/file-sharing/sender'))} flexgrow ascolumn align_items="flex-start">Share PDF</Button>
+              </FlexContainer>
             </FlexContainer>
-          </FlexContainer>
 
-          <FlexContainer column gap="0.5rem" padding="0 0 0 0rem">
-            <h5 class="no-margin">Sign In with Privacy Portal</h5>
-            <FlexContainer column rounded border overflowhidden zeroFlexShrink gap="2px">
-              <Button on:click={closeOnExit(gotoPage('/settings/applications'))} flexgrow ascolumn align_items="flex-start">Authorized Apps</Button>
-              <Button on:click={closeOnExit(gotoPage('/settings/developers'))} flexgrow ascolumn align_items="flex-start">Developer Settings</Button>
+            <FlexContainer column gap="0.5rem" padding="0 0 0 0rem">
+              <h5 class="no-margin">Sign In with Privacy Portal</h5>
+              <FlexContainer column rounded border overflowhidden zeroFlexShrink gap="2px">
+                <Button on:click={closeOnExit(gotoPage('/settings/applications'))} flexgrow ascolumn align_items="flex-start">Authorized Apps</Button>
+                <Button on:click={closeOnExit(gotoPage('/settings/developers'))} flexgrow ascolumn align_items="flex-start">Developer Settings</Button>
+              </FlexContainer>
             </FlexContainer>
-          </FlexContainer>
+          {/if}
         </FlexContainer>
         <FlexContainer column>
           <Button on:click={closeOnExit(endSession)} flexgrow primary rounded>Sign Out</Button>
         </FlexContainer>
       </FlexContainer>
     {:else}
-      <h3>Links</h3>
-      <FlexContainer column rounded border overflowhidden zeroFlexShrink gap="2px">
-        <Button on:click={closeOnExit(gotoExt(`${LANDING_CLIENT_URL}`))} flexgrow ascolumn align_items="flex-start">Home</Button>
-        <Button on:click={closeOnExit(gotoExt(`${LANDING_CLIENT_URL}/support`))} flexgrow ascolumn align_items="flex-start">Support</Button>
-        <Button on:click={closeOnExit(gotoExt(`${LANDING_CLIENT_URL}/blog`))} flexgrow ascolumn align_items="flex-start">Blog</Button>
-        <Button on:click={closeOnExit(gotoExt(`${LANDING_CLIENT_URL}/privacy`))} flexgrow ascolumn align_items="flex-start">Privacy Policy</Button>
-      </FlexContainer>
-      {#if canInstallApp && deferredInstallPrompt}
+      {#if !$session?.email}
+        <h3>Links</h3>
+        <FlexContainer column rounded border overflowhidden zeroFlexShrink gap="2px">
+          <Button on:click={closeOnExit(gotoExt(`${LANDING_CLIENT_URL}`))} flexgrow ascolumn align_items="flex-start">Home</Button>
+          <Button on:click={closeOnExit(gotoExt(`${LANDING_CLIENT_URL}/support`))} flexgrow ascolumn align_items="flex-start">Support</Button>
+          <Button on:click={closeOnExit(gotoExt(`${LANDING_CLIENT_URL}/blog`))} flexgrow ascolumn align_items="flex-start">Blog</Button>
+          <Button on:click={closeOnExit(gotoExt(`${LANDING_CLIENT_URL}/privacy`))} flexgrow ascolumn align_items="flex-start">Privacy Policy</Button>
+        </FlexContainer>
         <br />
+      {/if}
+      {#if canInstallApp && deferredInstallPrompt}
         <FlexContainer column>
           <Button on:click={handleAppInstall} flexgrow primary light border rounded>Install App</Button>
         </FlexContainer>
+        <br />
       {/if}
       {#if $session?.email}
-        <br />
         <FlexContainer column>
           <Button on:click={closeOnExit(endSession)} flexgrow primary rounded>Sign Out</Button>
         </FlexContainer>
       {/if}
     {/if}
-  </Drawer>
+  </NavDrawer>
   <div class="wrapper">
     <nav>
       <div class="nav-section mobile">
@@ -227,18 +233,18 @@
           <Button on:click={handleNavButtonAction} margin="0px 0px 0px -4px" padding="0px"><BackIcon /></Button>
         {:else}
           <Button on:click={() => (drawerOpened = true)} margin="0px" padding="0px 2px" blendin rounded>
-            <Burger color={$isDarkMode ? 'var(--text-color)' : $logoColor} />
+            <Burger color={$isDarkMode ? 'var(--text-color)' : $navConfig.logoColor} />
           </Button>
         {/if}
       </div>
       <a class="nav-section" href="/" rel="home">
-        <Logo dimension="34" color={isOffline ? 'var(--disabled-color)' : $logoColor} opacity={'1'} />
+        <Logo dimension="34" color={isOffline ? 'var(--disabled-color)' : $navConfig.logoColor} opacity={'1'} />
         <span class="brand-name no-wrap no-mobile">Privacy Portal</span>
       </a>
       <div class="nav-section">
-        {#if isLoginScreen}
+        {#if !$session?.email}
           <FlexContainer width="100%" align_items="center" justify_content="flex-end" nomobile gap="1rem">
-            {#if $showPrintButton}
+            {#if $navConfig.showPrintButton}
               <Button on:click={handlePrintButtonAction} width="auto" height="auto" padding="0.2rem 0.3rem" light border rounded>
                 <FlexContainer align_items="center" gap="0.2rem">
                   <PrintIcon dimension="16px" />
@@ -263,7 +269,7 @@
           </FlexContainer>
 
           <FlexContainer width="100%" align_items="center" justify_content="flex-end" gap="0.5rem" onlymobile>
-            {#if $showPrintButton}
+            {#if $navConfig.showPrintButton}
               <Button on:click={handlePrintButtonAction} width="auto" height="auto" padding="0.2rem" light border rounded>
                 <FlexContainer align_items="center" gap="0.2rem">
                   <PrintIcon dimension="16px" />
@@ -285,7 +291,7 @@
         {/if}
         <div class="menu-group">
           {#if $session?.email}
-            {#if $showPrintButton}
+            {#if $navConfig.showPrintButton}
               <Button on:click={handlePrintButtonAction} height="28px" margin="0px" padding="0px 0.3rem" border rounded mobile>
                 <FlexContainer align_items="center" gap="0.2rem">
                   <PrintIcon dimension="24px" />
@@ -293,13 +299,15 @@
                 </FlexContainer>
               </Button>
             {/if}
-            <Button on:click={() => (appsModalOpened = true)} height="28px" margin="0px" padding="0" border rounded mobile>
-              <AppsIcon dimension="24px" />
-            </Button>
+            {#if $isSignedInUnlocked}
+              <Button on:click={() => (appsModalOpened = true)} height="28px" margin="0px" padding="0" border rounded mobile>
+                <AppsIcon dimension="24px" />
+              </Button>
+            {/if}
             <Button on:click={() => (accountModalOpened = true)} height="28px" margin="0px" padding="0" border rounded mobile>
               <PersonIcon dimension="24px" />
             </Button>
-            {#if $showPrintButton}
+            {#if $navConfig.showPrintButton}
               <Button on:click={handlePrintButtonAction} height="34px" margin="0px" padding="0px 0.3rem" border rounded noMobile>
                 <FlexContainer align_items="center" gap="0.2rem">
                   <PrintIcon dimension="24px" />
@@ -307,31 +315,33 @@
                 </FlexContainer>
               </Button>
             {/if}
-            <Dropdown height="34px" noMobile>
-              <AppsIcon dimension="24px" slot="title" />
-              <FlexContainer column gap="1.5rem">
-                <FlexContainer column gap="0.5rem">
-                  <h4 class="no-margin">Mail Relay</h4>
-                  <FlexContainer column rounded overflowhidden gap="1px">
-                    <Button on:click={gotoPage('/mail-relay')} basic>Privacy Aliases</Button>
-                    <Button on:click={gotoPage('/mail-relay/settings')} basic>Relay Settings</Button>
+            {#if $isSignedInUnlocked}
+              <Dropdown height="34px" noMobile>
+                <AppsIcon dimension="24px" slot="title" />
+                <FlexContainer column gap="1.5rem">
+                  <FlexContainer column gap="0.5rem">
+                    <h4 class="no-margin">Mail Relay</h4>
+                    <FlexContainer column rounded overflowhidden gap="1px">
+                      <Button on:click={gotoPage('/mail-relay')} basic>Privacy Aliases</Button>
+                      <Button on:click={gotoPage('/mail-relay/settings')} basic>Relay Settings</Button>
+                    </FlexContainer>
+                  </FlexContainer>
+                  <FlexContainer column gap="0.5rem">
+                    <h4 class="no-margin">File Sharing</h4>
+                    <FlexContainer column rounded overflowhidden gap="1px">
+                      <Button on:click={gotoPage('/file-sharing/sender')} basic>Share PDF</Button>
+                    </FlexContainer>
+                  </FlexContainer>
+                  <FlexContainer column gap="0.5rem">
+                    <h4 class="no-margin">Sign In with Privacy Portal</h4>
+                    <FlexContainer column rounded overflowhidden gap="1px">
+                      <Button on:click={gotoPage('/settings/applications')} basic>Authorized Apps</Button>
+                      <Button on:click={gotoPage('/settings/developers')} basic>Developer Settings</Button>
+                    </FlexContainer>
                   </FlexContainer>
                 </FlexContainer>
-                <FlexContainer column gap="0.5rem">
-                  <h4 class="no-margin">File Sharing</h4>
-                  <FlexContainer column rounded overflowhidden gap="1px">
-                    <Button on:click={gotoPage('/file-sharing/sender')} basic>Share PDF</Button>
-                  </FlexContainer>
-                </FlexContainer>
-                <FlexContainer column gap="0.5rem">
-                  <h4 class="no-margin">Sign In with Privacy Portal</h4>
-                  <FlexContainer column rounded overflowhidden gap="1px">
-                    <Button on:click={gotoPage('/settings/applications')} basic>Authorized Apps</Button>
-                    <Button on:click={gotoPage('/settings/developers')} basic>Developer Settings</Button>
-                  </FlexContainer>
-                </FlexContainer>
-              </FlexContainer>
-            </Dropdown>
+              </Dropdown>
+            {/if}
             <Dropdown height="34px" noMobile>
               <PersonIcon dimension="24px" slot="title" />
               <h5 class="no-margin oneline">{emailLocalPart}</h5>
@@ -344,16 +354,18 @@
                 {/if}
               </div>
               <hr class="divider" />
-              {#if $session?.email_verified !== false}
-                <FlexContainer column gap="0.5rem">
+              <FlexContainer column gap="0.5rem">
+                {#if $isSignedInBasic}
                   <FlexContainer column rounded overflowhidden gap="1px">
-                    <Button on:click={gotoPage('/account')} basic>Account</Button>
-                    <Button on:click={gotoPage('/settings/security')} basic>Security</Button>
+                    {#if $isSignedInUnlocked}
+                      <Button on:click={gotoPage('/account')} basic>Account</Button>
+                      <Button on:click={gotoPage('/settings/security')} basic>Security</Button>
+                    {/if}
                     <Button on:click={gotoPage('/support')} basic>Get Help</Button>
                   </FlexContainer>
-                  <Button on:click={endSession} primary rounded>Sign Out</Button>
-                </FlexContainer>
-              {/if}
+                {/if}
+                <Button on:click={endSession} primary rounded>Sign Out</Button>
+              </FlexContainer>
             </Dropdown>
           {/if}
         </div>
@@ -377,6 +389,10 @@
     margin-right: auto;
     background-color: var(--base-color);
     box-shadow: inset 0 -1px 0 var(--base-border-color);
+  }
+
+  header.full-width > .wrapper {
+    max-width: 100%;
   }
 
   header.login-screen > .wrapper {

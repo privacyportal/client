@@ -255,7 +255,6 @@
                   name="url"
                   placeholder="https://<app.url>"
                   pattern="^http(s://.+|://(.+.local|localhost:[0-9]+))$"
-                  }
                   autocomplete="off"
                   bind:value={_url}
                   disabled={loading}

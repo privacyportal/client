@@ -4,61 +4,53 @@ import { derived, writable } from 'svelte/store';
 const CONFIG = {
   '/': {
     // DEFAULTS
-    logo_color: 'var(--primary-color)',
-    public: false,
-    noHeader: false
+    logoColor: 'var(--primary-color)',
+    isPublicPage: false,
+    noHeader: false,
+    showPrintButton: false,
+    fullWidth: false
   },
   '/add-device': {
-    public: true,
+    isPublicPage: true,
     noHeader: false
   },
   '/oauth/authorize': {
-    public: false,
+    isPublicPage: false,
     noHeader: true
   },
   '/unsubscribe': {
-    public: true,
+    isPublicPage: true,
     noHeader: true
   },
   '/file-sharing/preview': {
-    public: true,
+    isPublicPage: true,
     noHeader: false,
-    showPrintBtn: true
+    showPrintButton: true
   },
   '/file-sharing/preview/pdf-viewer': {
-    public: true,
+    isPublicPage: true,
     noHeader: true
+  },
+  '/support': {
+    isE2EEBypassedPage: true
   }
 };
 
 // get all parent paths in order
-// e.g. '/blog/tech/example' would return ['/blog/tech', '/blog', '/']
+// e.g. '/blog/tech/example' would return ['/', '/blog', '/blog/tech']
 const parentPaths = (fullPath) => {
-  const pathComponents = fullPath.split('/');
-
-  const result = [fullPath];
-  while (pathComponents.length > 1) {
-    pathComponents.pop();
-    result.push(pathComponents.join('/') || '/');
-  }
-  return result;
+  let parentPath = '';
+  return fullPath.split('/').map((child) => {
+    if (!child.length) return '/';
+    parentPath += '/' + child;
+    return parentPath;
+  });
 };
 
-// given a path such as '/blog/tech/example' and a lookup map it returns the correct config for that path
-const pathConfigValue = (fullPath, key) => {
-  const pathArr = parentPaths(fullPath);
-  for (const parentPath of pathArr) {
-    const value = (CONFIG[parentPath] || {})[key];
-    if (value != null && value != undefined) return value;
-  }
-  // default
-  return CONFIG['/'][key];
-};
-
-export const logoColor = derived(page, ($page) => pathConfigValue($page.url.pathname, 'logo_color'));
-export const isPublicPage = derived(page, ($page) => pathConfigValue($page.url.pathname, 'public'));
-export const noHeader = derived(page, ($page) => pathConfigValue($page.url.pathname, 'noHeader'));
-export const showPrintButton = derived(page, ($page) => pathConfigValue($page.url.pathname, 'showPrintBtn'));
+export const navConfig = derived(page, ($page) => {
+  const pathArr = parentPaths($page.url.pathname);
+  return Object.assign({}, ...pathArr.map((path) => CONFIG[path]));
+});
 
 // mobile back button
 export const navBackButton = writable(null);

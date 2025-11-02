@@ -19,15 +19,17 @@
   import OfflineBoltIcon from '$lib/components/materialIcons/OfflineBoltIcon.svelte';
   import SearchIcon from '$lib/components/materialIcons/SearchIcon.svelte';
   import SortListIcon from '$lib/components/materialIcons/SortListIcon.svelte';
-  import { getAddresses, getRelayAccountsWithActiveProfiles } from '$lib/modules/requests';
+  import { editAddress, getAddresses, getRelayAccountsWithActiveProfiles } from '$lib/modules/requests';
   import { replaceStateWithQuery } from '$lib/modules/utils';
-  import { isEnhancedProtection } from '$lib/stores/account';
+  import { isEnhancedProtection, session, cryptoTasks } from '$lib/stores/account';
   import { MAX_LABEL_LENGTH, addresses as addressesStore, selectedAddress } from '$lib/stores/mail';
   import { navBackButton } from '$lib/stores/nav';
   import { activeAccountsById, fwdToFilters } from '$lib/stores/relay';
   import { onDestroy, onMount } from 'svelte';
   import MailAddress from './MailAddress.svelte';
   import MailIntro from './MailIntro.svelte';
+  import { get } from 'svelte/store';
+  import { encryptAddressData } from '$lib/modules/mrelayUtil';
 
   const MAX_BASIC_PROTECTION_ADDRESSES = 20;
 
@@ -51,6 +53,8 @@
   let searchInputElement;
   let addressesCount;
   let oidcAddressesCount;
+  let plainTextCount = 0;
+  let encryptingPlaintextAddresses = false;
 
   // addresses and query
   let addresses;
@@ -79,6 +83,39 @@
 
   $: addressLimitReached =
     !$isEnhancedProtection && !fetchingAddresses && addressesCount !== undefined && oidcAddressesCount !== undefined && addressesCount - oidcAddressesCount >= MAX_BASIC_PROTECTION_ADDRESSES;
+
+  $: if ($session?.e2ee && $cryptoTasks) {
+    Promise.all(
+      get(addressesStore).map(function (item) {
+        return $cryptoTasks.decryptItem(item);
+      })
+    ).then((addresses) => {
+      addressesStore.set(addresses);
+    });
+  }
+
+  $: if ($addressesStore.some((address) => address.foreign)) {
+    // re-encrypt in background worker
+    reencryptAddresses();
+  }
+
+  $: if (!encryptingPlaintextAddresses && $session?.e2ee && $cryptoTasks && plainTextCount > 0) {
+    encryptPlaintextAddresses();
+  }
+
+  function reencryptAddresses() {
+    const foreignAddresses = $addressesStore.filter((address) => address.foreign);
+    Promise.all(
+      foreignAddresses.map(function (address) {
+        const id = address.id;
+        const data = { label: address.label, note: address.note };
+        encryptAddressData(address, $cryptoTasks).then(async (encryptedData) => {
+          await editAddress({ id, ...encryptedData });
+          await handleAddressPatched({ id, ...data, ...encryptedData });
+        });
+      })
+    );
+  }
 
   function reset() {
     navBackButton.set(false);
@@ -147,7 +184,7 @@
 
   async function handleAddressPatched(addressPatch) {
     addressesStore.update((addresses) => addresses.map((address) => (address.id === addressPatch.id ? { ...address, ...addressPatch } : address)));
-    selectedAddress.update((address) => ({ ...address, ...addressPatch }));
+    selectedAddress.update((address) => (address?.id === addressPatch?.id ? { ...address, ...addressPatch } : address));
   }
 
   async function handleAddressDeleted(deletedAddress) {
@@ -155,6 +192,9 @@
     selectedAddress.set(null);
     updateNavButton(false);
     addressesCount -= 1;
+    if (addressesCount > 0 && $addressesStore.length === 0) {
+      await fetchAddresses();
+    }
   }
 
   function toggleShowNewAddress() {
@@ -172,16 +212,51 @@
     console.log('fetchAddresses');
     try {
       fetchingAddresses = true;
-      const res = await getAddresses(searchQuery, filter, fwdToFilter, sortBy, previous, latestId);
+      const e2eeSearchQuery = $session.e2ee && searchQuery && $cryptoTasks ? await $cryptoTasks.hashStr(searchQuery) : searchQuery;
+      const res = await getAddresses(e2eeSearchQuery, filter, fwdToFilter, sortBy, previous, latestId);
       // console.log(res.data);
-
-      addressesStore.set(res.data.addresses);
+      addressesStore.set(
+        $session?.e2ee && $cryptoTasks
+          ? await Promise.all(
+              res.data.addresses.map(function (item) {
+                return $cryptoTasks.decryptItem(item).catch(() => item);
+              })
+            )
+          : res.data.addresses
+      );
       isFirstPage = res.data.meta.isFirstPage;
       isLastPage = res.data.meta.isLastPage;
       addressesCount = res.data.meta.total;
       oidcAddressesCount = res.data.meta.oidcTotal;
+      plainTextCount = res.data.meta.plainTextTotal;
     } finally {
       fetchingAddresses = false;
+    }
+  }
+
+  async function encryptPlaintextAddresses() {
+    try {
+      encryptingPlaintextAddresses = true;
+      while (plainTextCount > 0) {
+        // encrypt addresses in reverse
+        const res = await getAddresses(undefined, 'plaintext', undefined, undefined, true, undefined);
+        plainTextCount = res.data.meta.plainTextTotal;
+        const plainTextAddresses = res.data.addresses;
+
+        await Promise.all(
+          plainTextAddresses.map(function (address) {
+            const id = address.id;
+            const data = { label: address.label, note: address.note };
+            encryptAddressData(address, $cryptoTasks).then(async (encryptedData) => {
+              await editAddress({ id, ...encryptedData });
+              await handleAddressPatched({ id, ...data, ...encryptedData });
+            });
+          })
+        );
+        plainTextCount -= plainTextAddresses.length;
+      }
+    } finally {
+      encryptingPlaintextAddresses = false;
     }
   }
 
@@ -350,9 +425,9 @@
           rounded
         >
           {#if searchQuery}
-            <AddIcon color="var(--text-light-color)" />
+            <AddIcon color="var(--link-color)" />
           {:else}
-            <GridContainer height="100%" padding="0.2rem 0.3rem" align_items="center" template_columns="1fr auto 1fr" color="var(--text-light-color)">
+            <GridContainer height="100%" padding="0.2rem 0.3rem" align_items="center" template_columns="1fr auto 1fr" color="inherit">
               <div />
               <span class="oneline">{addressLimitReached ? 'Get More Aliases' : 'New Alias'}</span>
               <FlexContainer height="100%" align_items="flex-end" justify_content="flex-end" color="inherit">
@@ -396,7 +471,7 @@
             {#each addresses as address}
               <Button on:click={() => selectAddress(address)} selected={$selectedAddress?.id === address?.id} ascolumn border align_items="flex-start" height="65px">
                 <FlexContainer align_items="center" justify_content="flex-start" gap="0.5rem">
-                  <h4 class="no-margin oneline">{address.label.replace(/^https?:\/\/(\S+)/, '$1')}</h4>
+                  <h4 class="no-margin oneline">{address?.label?.replace(/^https?:\/\/(\S+)/, '$1') ?? '**********'}</h4>
                   {#if address.deactivated_at}
                     <OfflineBoltIcon dimension="18" color="var(--warning-color)" />
                   {/if}

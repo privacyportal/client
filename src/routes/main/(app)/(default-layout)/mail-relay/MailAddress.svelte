@@ -24,17 +24,19 @@
   import { activateAddress, createAddress, deactivateAddress, deleteAddress, editAddress, newAddress } from '$lib/modules/requests';
   import { gotoPage } from '$lib/modules/routingUtils';
   import { convertToHostname, writeValueToClipboard } from '$lib/modules/utils';
-  import { isEnhancedProtection } from '$lib/stores/account';
+  import { isEnhancedProtection, session, cryptoTasks } from '$lib/stores/account';
   import { MAX_LABEL_LENGTH, MAX_NOTE_LENGTH, newAddressSuggestion } from '$lib/stores/mail';
   import { activeAccountsById } from '$lib/stores/relay';
   import { onMount } from 'svelte';
   import NewRecipient from './NewRecipient.svelte';
   import AddressActivity from './AddressActivity.svelte';
+  import { encryptAddressData } from '$lib/modules/mrelayUtil';
 
   export let editMode = false;
   export let id = undefined;
   export let label = undefined;
   export let note = undefined;
+  export let ct = undefined;
   export let value = undefined;
   export let fwd_to = undefined;
   export let oauth_app_id = undefined;
@@ -64,6 +66,8 @@
 
   let copyTimeout;
 
+  let DOMPurifyInstance = null;
+
   // reset copied on id change
   $: copied = false && id;
 
@@ -71,6 +75,13 @@
   $: relayAccountsSelectOptions = Object.values($activeAccountsById || []).map((acct) => ({ text: acct.email, value: acct.id }));
 
   $: canShare = !!(value && navigator.canShare && navigator.canShare({ text: value }));
+
+  async function getDOMPurify() {
+    if (!DOMPurifyInstance) {
+      DOMPurifyInstance = (await import('dompurify')).default;
+    }
+    return DOMPurifyInstance;
+  }
 
   async function copyToClipboard() {
     if (value) {
@@ -103,20 +114,31 @@
   async function handleSubmit() {
     loading = true;
     try {
+      const DOMPurify = await getDOMPurify();
+      const data = {
+        label: DOMPurify.sanitize(_label),
+        note: DOMPurify.sanitize(editMode ? _note || '' : _note)
+      };
+      let encryptedData;
+      if ($session.e2ee) {
+        // encrypt data before storage
+        encryptedData = await encryptAddressData({ ...data, value }, $cryptoTasks);
+      }
+
       if (editMode) {
-        const editAddressResult = await editAddress({ id, label: _label, note: _note });
+        const editAddressResult = await editAddress({ id, ...(encryptedData ?? data) });
         console.log(editAddressResult, editAddressResult.headers);
-        await handleAddressPatched({ id, label: _label, note: _note });
+        await handleAddressPatched({ id, ...data, ...encryptedData });
         showEditForm = false;
       } else {
-        const createAddressResult = await createAddress({ label: _label, address: value, note: _note });
+        const createAddressResult = await createAddress({ address: value, ...(encryptedData ?? data) });
         console.log(createAddressResult, createAddressResult.headers);
         await handleNewAddressCreated(createAddressResult.data);
         newAddressSuggestion.set(null);
       }
     } catch (err) {
       /* do nothing */
-      console.error(err);
+      displayError(err);
     } finally {
       loading = false;
     }
@@ -167,10 +189,11 @@
     }
   }
 
-  async function handleActivationToggle() {
+  async function handleActivationToggle(event) {
+    const { newValue, confirm, cancel } = event.detail;
     activationChanging = true;
     try {
-      if (!deactivated_at) {
+      if (!newValue) {
         // deactivate
         const res = await deactivateAddress({ id, mode: 'drop' });
         console.log(res, res.headers);
@@ -181,19 +204,22 @@
         console.log(res, res.headers);
         await handleAddressPatched({ id, deactivated_at: undefined, bounce: undefined, fwd_to: _fwd_to });
       }
+      confirm();
     } catch (err) {
       /* do nothing */
       console.error(err);
       displayError(err);
+      cancel(err);
     } finally {
       activationChanging = false;
     }
   }
 
-  async function handleRejectIncomingMailToggle() {
+  async function handleRejectIncomingMailToggle(event) {
+    const { newValue, confirm, cancel } = event.detail;
     silentModeChanging = true;
     try {
-      if (bounce) {
+      if (!newValue) {
         // deactivate
         const res = await deactivateAddress({ id, mode: 'drop' });
         console.log(res, res.headers);
@@ -204,10 +230,12 @@
         console.log(res, res.headers);
         await handleAddressPatched({ id, bounce: true });
       }
+      confirm();
     } catch (err) {
       /* do nothing */
       console.error(err);
       displayError(err);
+      cancel(err);
     } finally {
       silentModeChanging = false;
     }
@@ -294,7 +322,7 @@
       </GridContainer>
       {#if !editMode || showEditForm}
         <Form on:submit={handleSubmit}>
-          <FlexContainer padding="0.5rem" bgColor="var(--new-layer-color)" width="auto" column textCentered gap="0.25rem" rounded>
+          <FlexContainer padding="0.5rem" bgColor="var(--new-layer-color)" width="auto" column gap="0.25rem" rounded>
             {#if editMode}
               <FlexContainer margin="0 0 0.2rem 0" align_items="center" justify_content="space-between">
                 <h5 class="no-margin">Edit Info</h5>
@@ -305,7 +333,19 @@
             {/if}
             <InputLabel>
               <LabelIcon slot="icon" />
-              <Input slot="input" type="text" name="label" placeholder="Label Your Alias" autocomplete="off" maxlength={MAX_LABEL_LENGTH} bind:value={_label} icon disabled={loading} focus />
+              <Input
+                slot="input"
+                type="text"
+                name="label"
+                placeholder="Label Your Alias"
+                autocomplete="off"
+                minlength="1"
+                maxlength={MAX_LABEL_LENGTH}
+                bind:value={_label}
+                icon
+                disabled={loading}
+                focus
+              />
             </InputLabel>
             <InputLabel>
               <DescriptionIcon slot="icon" />
@@ -316,6 +356,15 @@
             {:else if dirty}
               <Button type="submit" disabled={loading} primary="true" rounded>Save</Button>
             {/if}
+            <GridContainer template_columns="18px auto" align_items="center" margin="0.3rem 0 0 0" gap="0.1rem">
+              {#if ct}
+                <LockIcon color="var(--positive-color)" dimension="14px" />
+                <span class="note">The label and note are end-to-end encrypted.</span>
+              {:else}
+                <NoEncryptionIcon color="var(--warning-color)" dimension="14px" />
+                <span class="note">For better privacy, please enable E2EE in your <a href="/account">account settings</a>.</span>
+              {/if}
+            </GridContainer>
           </FlexContainer>
         </Form>
       {/if}
@@ -362,7 +411,7 @@
         <FlexContainer column align_items="flex-start" bgColor="var(--new-layer-color)" padding="0.5rem" gap="0.3rem" rounded autooverflow>
           <FlexContainer align_items="center" justify_content="space-between" gap="0.5rem">
             <h5 class="no-margin">Forward to</h5>
-            <Toggle on:click={handleActivationToggle} size="13px" checked={!deactivated_at} disabled={activationChanging} />
+            <Toggle on:beforechange={handleActivationToggle} size="13px" checked={!deactivated_at} disabled={activationChanging} asyncMode />
           </FlexContainer>
           {#if relayAccountsSelectOptions.length < 2}
             <span class="xs oneline">{$activeAccountsById?.[fwd_to]?.email}</span>
@@ -374,7 +423,7 @@
             <FlexContainer column bgColor="var(--new-layer-color)" margin="0.5rem 0 0 0" padding="0.5rem" gap="0.5rem" rounded>
               <FlexContainer align_items="center" justify_content="space-between">
                 <h6 class="no-margin">Reject Incoming Mail</h6>
-                <Toggle on:click={handleRejectIncomingMailToggle} size="12px" checked={bounce} disabled={silentModeChanging} danger />
+                <Toggle on:beforechange={handleRejectIncomingMailToggle} size="12px" checked={bounce} disabled={silentModeChanging} danger asyncMode />
               </FlexContainer>
               <span class="note"
                 >When enabled, senders would receive delivery errors when attempting to reach this address. This could get your address automatically unsubscribed from mailing lists.</span
@@ -439,5 +488,10 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+  }
+
+  a {
+    text-decoration: underline;
+    color: var(--text-color);
   }
 </style>

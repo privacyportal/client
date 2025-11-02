@@ -78,22 +78,23 @@
     await fetchAuthenticators();
   }
 
-  async function handleDeactivateAuthenticator(id) {
-    try {
-      await deactivateAuthenticator({ id });
-      authenticators = authenticators.map((key) => (key.id === id ? Object.assign(key, { enabled: false }) : key));
-    } catch (err) {
-      displayError(err);
-    }
-  }
-
-  async function handleActivateAuthenticator(id) {
-    try {
-      await activateAuthenticator({ id });
-      authenticators = authenticators.map((key) => (key.id === id ? Object.assign(key, { enabled: true }) : key));
-    } catch (err) {
-      displayError(err);
-    }
+  function handleToggleAuthenticator(id) {
+    return async function (event) {
+      const { newValue, confirm, cancel } = event.detail;
+      try {
+        if (newValue) {
+          await activateAuthenticator({ id });
+          authenticators = authenticators.map((key) => (key.id === id ? Object.assign(key, { enabled: true }) : key));
+        } else {
+          await deactivateAuthenticator({ id });
+          authenticators = authenticators.map((key) => (key.id === id ? Object.assign(key, { enabled: false }) : key));
+        }
+        confirm();
+      } catch (err) {
+        displayError(err);
+        cancel(err);
+      }
+    };
   }
 
   async function handleRemoveAuthenticator(id) {
@@ -102,6 +103,7 @@
       authenticators = authenticators.filter((key) => key.id !== id);
     } catch (err) {
       displayError(err);
+      throw err;
     }
   }
 
@@ -139,12 +141,7 @@
             <span class="oneline mono sm">{authenticator.label}</span>
             <span class="mono sm">{formatDate(authenticator.last_used)}</span>
             <FlexContainer align_items="center" justify_content="center">
-              <Toggle
-                on:click={() => (authenticator.enabled ? handleDeactivateAuthenticator(authenticator.id) : handleActivateAuthenticator(authenticator.id))}
-                size="12px"
-                disabled={loadingAuthenticators}
-                checked={authenticator.enabled}
-              />
+              <Toggle on:beforechange={handleToggleAuthenticator(authenticator.id)} size="12px" disabled={loadingAuthenticators} checked={authenticator.enabled} asyncMode />
             </FlexContainer>
             <Button height="auto" margin="0" padding="0.2rem 0px" on:click={handleRemoveAuthenticator(authenticator.id)} disabled={authenticator.enabled} blendin rounded>
               <DeleteIcon dimension="18px" disabled={authenticator.enabled} />

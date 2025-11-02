@@ -9,11 +9,13 @@
   export let required = true;
   export let minlength = undefined;
   export let maxlength = undefined;
+  export let pattern = undefined;
   export let flexgrow = false;
   export let disabled = false;
   export let rows = 5;
   export let cols = 60;
   export let acceptFileDrop = undefined;
+  export let validateFn = undefined;
 
   let dragover = undefined;
 
@@ -25,6 +27,11 @@
     if (validity.tooLong) return event.target.setCustomValidity('Input is too long.');
     if (validity.tooShort) return event.target.setCustomValidity('Input is too short.');
     if (validity.patternMismatch) return event.target.setCustomValidity('Invalid input.');
+  }
+
+  function validateCustom() {
+    console.log({ customValidity: validateFn(value) });
+    textAreaElement.setCustomValidity(validateFn(value));
   }
 
   function handleDroppedFile(file) {
@@ -73,6 +80,18 @@
       });
     }
   }
+
+  $: {
+    if (textAreaElement && pattern) {
+      textAreaElement.setCustomValidity('');
+    }
+  }
+
+  $: {
+    if (validateFn && textAreaElement && value) {
+      validateCustom();
+    }
+  }
 </script>
 
 <textarea
@@ -89,6 +108,8 @@
   {required}
   {minlength}
   {maxlength}
+  {pattern}
+  {...validateFn && { 'data-custom-validate': 'true' }}
   {disabled}
   class:flexgrow
   class:dragover

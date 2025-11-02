@@ -34,12 +34,18 @@
     }
   }
 
-  async function updateEmailRecoveryToggle(newState) {
+  async function updateEmailRecoveryToggle(event) {
+    const { newValue: activated, confirm, cancel } = event.detail;
     try {
       updating = true;
       // toggle state
-      newState ? await activateEmailRecovery() : await deactivateEmailRecovery();
-      emailRecovery.enabled = newState;
+      activated ? await activateEmailRecovery() : await deactivateEmailRecovery();
+      emailRecovery.enabled = activated;
+      confirm();
+    } catch (err) {
+      console.error(err);
+      displayError(err);
+      cancel(err);
     } finally {
       updating = false;
     }
@@ -80,7 +86,7 @@
       <FlexContainer column padding="0.7rem" bgColor="var(--new-layer-color)" gap="0.5rem" rounded>
         <FlexContainer align_items="center" justify_content="space-between">
           <h5 class="no-margin">Enable Email Recovery</h5>
-          <Toggle on:click={() => updateEmailRecoveryToggle(!emailRecovery?.enabled)} size="12px" warning={!emailRecovery?.totp} disabled={updating} checked={emailRecovery?.enabled} />
+          <Toggle on:beforechange={updateEmailRecoveryToggle} size="12px" warning={!emailRecovery?.totp} disabled={updating} checked={emailRecovery?.enabled} asyncMode />
         </FlexContainer>
         <span class="xs">Use your primary email to regain access to your Privacy Portal account.{emailRecovery?.totp ? '' : ' For better security, please enable Two Factor Authentication'}</span>
         {#if emailRecovery?.enabled}

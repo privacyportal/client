@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
 
   export let type = 'button';
+  export let name = undefined;
   export let disabled = undefined;
   export let mobile = undefined;
   export let noMobile = undefined;
@@ -48,6 +49,7 @@
   style:--gap={gap}
   {type}
   {disabled}
+  {name}
   class:strong-select={strongSelect}
   class:rounded
   class:rounded-icon={roundedIcon}

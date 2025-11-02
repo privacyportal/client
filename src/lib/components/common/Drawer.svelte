@@ -1,13 +1,13 @@
 <script>
   import { navigating } from '$app/stores';
-  import Button from '$lib/components/common/Button.svelte';
-  import FlexContainer from '$lib/components/common/FlexContainer.svelte';
-  import CloseIcon from '$lib/components/materialIcons/CloseIcon.svelte';
-  import Logo from '$lib/components/svg/Logo.svelte';
-  import { logoColor } from '$lib/stores/nav';
   import { onDestroy } from 'svelte';
+  import Button from './Button.svelte';
+  import CloseIcon from '../materialIcons/CloseIcon.svelte';
 
   export let open = false;
+  export let mobile = false;
+  export let right = false;
+  export let heightSubstract = '0px';
 
   function handleExit() {
     if (open) {
@@ -21,61 +21,62 @@
   onDestroy(unsubscribeNavigation);
 </script>
 
-<div class="drawer mobile" class:open>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div on:click|stopPropagation={() => {}} class="drawer" class:mobile class:open class:right style:--height-sub={heightSubstract}>
   <div class="header">
-    <div class="brand">
-      <Logo dimension="34" color={$logoColor} opacity={'1'} />
-      <span class="brand-name no-wrap">Privacy Portal</span>
-    </div>
-    <Button on:click={handleExit} height="28px" margin="0px -0.25rem 0px 0px" padding="0px 2px" rounded>
+    <slot name="header" />
+    <Button on:click={handleExit} height="28px" padding="0px 2px" rounded>
       <CloseIcon dimension="30px" />
     </Button>
   </div>
-  <FlexContainer column height="100%" padding="1rem" bgColor="var(--new-layer-color)" nooverflow>
-    <slot />
-  </FlexContainer>
+  <slot />
 </div>
 
 <style>
   .drawer {
+    --drawer-width: max(30vw, 300px);
     display: flex;
     flex-direction: column;
     position: absolute;
-    z-index: 10000;
+    z-index: 1000;
     top: 0px;
-    left: 0px;
-    height: 100vh;
-    height: 100svh;
-    width: 100vw;
-    margin-left: -100vw;
+    height: calc(100vh - var(--height-sub));
+    height: calc(100svh - var(--height-sub));
+    width: var(--drawer-width);
+    max-width: var(--drawer-width);
     background-color: var(--base-color);
-    border-right: 2px solid var(--border-color);
     overflow: hidden;
-    transition: 0.3s ease;
+    transition: 0.3s ease-in-out;
   }
 
-  .open {
+  .drawer:not(.right) {
+    left: 0px;
+    margin-left: calc(-1 * var(--drawer-width));
+    border-right: 2px solid var(--border-color);
+  }
+
+  .drawer.open:not(.right) {
     margin-left: 0px;
-    transition: 0.4s ease-in-out;
+  }
+
+  .drawer.right {
+    right: 0px;
+    margin-right: calc(-1 * var(--drawer-width));
+    border-left: 2px solid var(--border-color);
+  }
+
+  .drawer.right.open {
+    margin-right: 0px;
   }
 
   .header {
+    height: 54px !important;
+    min-height: 54px !important;
     display: flex;
+    align-items: center;
     justify-content: space-between;
     padding: 0.5rem;
     box-shadow: inset 0 -1px 0 var(--border-color);
-  }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .brand-name {
-    color: var(--text-color);
-    font-weight: 400;
-    font-size: 1.17rem;
-    letter-spacing: 0px;
   }
 </style>

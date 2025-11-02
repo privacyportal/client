@@ -8,16 +8,18 @@
   export let account;
   let loading = false;
 
-  async function handleKillSwitchActivationToggle() {
+  async function handleKillSwitchActivationToggle(event) {
+    const { newValue: strict, confirm, cancel } = event.detail;
     loading = true;
     try {
-      const strict = !account?.strict;
       await patchRelayAccountSettings({ accountId: account.id, data: { strict } });
       relayAccountsStore.update((accounts) => accounts.map((acct) => (acct.id === account.id ? { ...acct, strict } : acct)));
+      confirm();
     } catch (err) {
       /* do nothing */
       console.error(err);
       displayError(err);
+      cancel(err);
     } finally {
       loading = false;
     }
@@ -32,7 +34,7 @@
   <FlexContainer column>
     <FlexContainer align_items="center" justify_content="space-between">
       <h6 class="no-margin">Kill Switch</h6>
-      <Toggle on:click={handleKillSwitchActivationToggle} size="12px" disabled={loading} checked={!!account?.strict} />
+      <Toggle on:beforechange={handleKillSwitchActivationToggle} size="12px" disabled={loading} checked={!!account?.strict} asyncMode />
     </FlexContainer>
     <span class="xs">When enabled, Mail Relay rejects all inbound mail if no valid encryption profile is found (e.g. at profile expiration).</span>
   </FlexContainer>

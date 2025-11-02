@@ -1,4 +1,28 @@
+<script context="module">
+  import { displayError } from '$lib/modules/errors';
+
+  export function toggleEventHandler(handler, opts) {
+    return async function (event) {
+      const { newValue, confirm, cancel } = event.detail;
+      try {
+        await handler(newValue);
+        confirm();
+      } catch (err) {
+        console.log(err);
+        if (opts?.displayError) {
+          displayError(err);
+        }
+        cancel(err);
+      }
+    };
+  }
+</script>
+
 <script>
+  import { createEventDispatcher } from 'svelte';
+
+  const dispatch = createEventDispatcher();
+
   export let inputElement = undefined;
   export let checked = undefined;
   export let name;
@@ -7,10 +31,59 @@
   export let warning = undefined;
   export let danger = undefined;
   export let noColorIfDisabled = undefined;
+  export let asyncMode = false;
+
+  let processing = false;
+
+  async function handleChange(event) {
+    const newValue = event.target.checked;
+    if (!disabled && !processing && asyncMode) {
+      // Revert the checkbox state temporarily
+      event.target.checked = !newValue;
+
+      try {
+        processing = true;
+
+        // Dispatch beforechange with the new value
+        await new Promise((resolve, reject) => {
+          dispatch('beforechange', {
+            currentValue: checked,
+            newValue,
+            confirm: resolve,
+            cancel: reject
+          });
+        });
+
+        // If we get here without throwing, allow the change
+        event.target.checked = newValue;
+        checked = newValue;
+      } catch (error) {
+        // Change was rejected, keep checkbox in original state
+        event.target.checked = !newValue;
+        console.log('Toggle change rejected:', error.message);
+      } finally {
+        processing = false;
+      }
+    }
+
+    dispatch('change', { value: newValue });
+  }
 </script>
 
 <div style:--size={size}>
-  <input type="checkbox" on:click bind:this={inputElement} bind:checked {name} {disabled} class:warning class:danger class:no-color={noColorIfDisabled} style:--size={size} />
+  <input
+    type="checkbox"
+    bind:this={inputElement}
+    on:change={handleChange}
+    bind:checked
+    {name}
+    disabled={processing || disabled}
+    class:warning
+    class:processing
+    class:danger
+    class:no-color={noColorIfDisabled}
+    style:--size={size}
+  />
 </div>
 
 <style>
@@ -78,6 +151,20 @@
 
   input.danger:not(.no-color):checked:after {
     background: var(--danger-color);
+  }
+
+  input.processing:before {
+    background:
+      /* Solid center circle */
+      radial-gradient(circle at center, var(--base-color) 0, var(--base-color) calc(var(--size) / 2 - 2px), transparent calc(var(--size) / 2)),
+      /* Border gradient */ conic-gradient(transparent, transparent 180deg, rgba(255, 255, 255, 0.7) 340deg, transparent 360deg) !important;
+    animation: rotate 1.5s linear infinite;
+  }
+
+  @keyframes rotate {
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   input,
