@@ -11,15 +11,13 @@ import { ping } from '@libp2p/ping';
 import { createLibp2p } from 'libp2p';
 import { bufferToBase64, stringToBase64 } from '../auth';
 import { ORIGIN_DOMAIN, TURN_SERVERS } from '../constants';
+import { CODE_WEBRTC, CODE_P2P, CODE_DNS4 } from '@multiformats/multiaddr';
 
 // match the webrtc data channel message size and account for overhead
 export const MAX_MESSAGE_SIZE = 16 * 1024 - 256;
 
 const PING_PROTOCOL_PREFIX = 'pportal';
 const RELAY_ADDRESS_REGEX = new RegExp(`^p2p-relay-[0-9]+.${ORIGIN_DOMAIN}$`);
-
-const PROTOCOL_WEBRTC_CODE = 281;
-const PROTOCOL_P2P_CODE = 421;
 
 export async function generateLibp2pPeerId() {
   return await createEd25519PeerId();
@@ -122,14 +120,13 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
 
         // accept inbound webrtc connections from peer /webrtc/p2p/<peerId>
         const components = connection.remoteAddr.getComponents();
-        if (components.length === 2 && components[0][0] === PROTOCOL_WEBRTC_CODE && components[1][0] === PROTOCOL_P2P_CODE) {
+        if (components.length === 2 && components[0].code === CODE_WEBRTC && components[1].code === CODE_P2P) {
           return false;
         }
 
         // accept inbound relayed websocket connections for signaling
         try {
-          const { address } = connection.remoteAddr.nodeAddress();
-          return !RELAY_ADDRESS_REGEX.test(address);
+          return !(components.length && components[0].code === CODE_DNS4 && RELAY_ADDRESS_REGEX.test(components[0].value));
         } catch (err) {
           console.warn(`denyInboundConnection from ${connection.remoteAddr.toString()} => denied`);
           // block all remaining inbound connections
@@ -142,14 +139,13 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
 
         // accept outbound webrtc connections to peer /webrtc/p2p/<peerId>
         const components = connection.remoteAddr.getComponents();
-        if (components.length === 2 && components[0][0] === PROTOCOL_WEBRTC_CODE && components[1][0] === PROTOCOL_P2P_CODE) {
+        if (components.length === 2 && components[0].code === CODE_WEBRTC && components[1].code === CODE_P2P) {
           return false;
         }
 
         // accept outbound relayed websocket connections for signaling
         try {
-          const { address } = connection.remoteAddr.nodeAddress();
-          return !RELAY_ADDRESS_REGEX.test(address);
+          return !(components.length && components[0].code === CODE_DNS4 && RELAY_ADDRESS_REGEX.test(components[0].value));
         } catch {
           console.warn(`denyOutboundConnection to ${connection.remoteAddr.toString()} => denied`);
           // block all remaining outbound connections
@@ -171,14 +167,13 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
       denyInboundUpgradedConnection: async (_, connection) => {
         // accept inbound upgraded webrtc connections from peer /webrtc/p2p/<peerId>
         const components = connection.remoteAddr.getComponents();
-        if (components.length === 2 && components[0][0] === PROTOCOL_WEBRTC_CODE && components[1][0] === PROTOCOL_P2P_CODE) {
+        if (components.length === 2 && components[0].code === CODE_WEBRTC && components[1].code === CODE_P2P) {
           return false;
         }
 
         // allow relayed inbound upgraded connections
         try {
-          const { address } = connection.remoteAddr.nodeAddress();
-          return !RELAY_ADDRESS_REGEX.test(address);
+          return !(components.length && components[0].code === CODE_DNS4 && RELAY_ADDRESS_REGEX.test(components[0].value));
         } catch {
           console.warn(`denyInboundUpgradedConnection from ${connection.remoteAddr.toString()} => denied`);
           // block all remaining outbound connections
