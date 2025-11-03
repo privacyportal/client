@@ -7,8 +7,7 @@ import { FaultTolerance } from '@libp2p/interface-transport';
 import { createEd25519PeerId } from '@libp2p/peer-id-factory';
 import { webRTC } from '@libp2p/webrtc';
 import { webSockets } from '@libp2p/websockets';
-import * as filters from '@libp2p/websockets/filters';
-import { ping } from '@privacyportal/ping';
+import { ping } from '@libp2p/ping';
 import { createLibp2p } from 'libp2p';
 import { bufferToBase64, stringToBase64 } from '../auth';
 import { ORIGIN_DOMAIN, TURN_SERVERS } from '../constants';
@@ -18,6 +17,9 @@ export const MAX_MESSAGE_SIZE = 16 * 1024 - 256;
 
 const PING_PROTOCOL_PREFIX = 'pportal';
 const RELAY_ADDRESS_REGEX = new RegExp(`^p2p-relay-[0-9]+.${ORIGIN_DOMAIN}$`);
+
+const PROTOCOL_WEBRTC_CODE = 281;
+const PROTOCOL_P2P_CODE = 421;
 
 export async function generateLibp2pPeerId() {
   return await createEd25519PeerId();
@@ -60,7 +62,7 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
     },
     transports: [
       // Allow all WebSocket connections inclusing without TLS
-      webSockets({ filter: filters.all }),
+      webSockets(),
       // support dialing/listening on WebRTC addresses
       webRTC({
         rtcConfiguration: {
@@ -105,11 +107,13 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
         // This field is optional, the default value is shown
         maxOutboundStreams: 100,
 
-        // Used to control the maximum window size that we allow for a stream.
-        maxStreamWindowSize: 64 * MAX_MESSAGE_SIZE,
-
         // set the max message size
-        maxMessageSize: MAX_MESSAGE_SIZE
+        maxMessageSize: MAX_MESSAGE_SIZE,
+
+        streamOptions: {
+          // Used to control the maximum window size that we allow for a stream.
+          maxStreamWindowSize: 64 * MAX_MESSAGE_SIZE,
+        }
       })
     ],
     connectionGater: {
@@ -117,8 +121,8 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
         // only accept inbound connections from the relay in sender mode
 
         // accept inbound webrtc connections from peer /webrtc/p2p/<peerId>
-        const protoNames = connection.remoteAddr.protoNames();
-        if (protoNames.length === 2 && protoNames[0] === 'webrtc' && protoNames[1] === 'p2p') {
+        const components = connection.remoteAddr.getComponents();
+        if (components.length === 2 && components[0][0] === PROTOCOL_WEBRTC_CODE && components[1][0] === PROTOCOL_P2P_CODE) {
           return false;
         }
 
@@ -137,8 +141,8 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
         // both sender and receiver use it to-reconnect in case the connection drops
 
         // accept outbound webrtc connections to peer /webrtc/p2p/<peerId>
-        const protoNames = connection.remoteAddr.protoNames();
-        if (protoNames.length === 2 && protoNames[0] === 'webrtc' && protoNames[1] === 'p2p') {
+        const components = connection.remoteAddr.getComponents();
+        if (components.length === 2 && components[0][0] === PROTOCOL_WEBRTC_CODE && components[1][0] === PROTOCOL_P2P_CODE) {
           return false;
         }
 
@@ -166,8 +170,8 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
       },
       denyInboundUpgradedConnection: async (_, connection) => {
         // accept inbound upgraded webrtc connections from peer /webrtc/p2p/<peerId>
-        const protoNames = connection.remoteAddr.protoNames();
-        if (protoNames.length === 2 && protoNames[0] === 'webrtc' && protoNames[1] === 'p2p') {
+        const components = connection.remoteAddr.getComponents();
+        if (components.length === 2 && components[0][0] === PROTOCOL_WEBRTC_CODE && components[1][0] === PROTOCOL_P2P_CODE) {
           return false;
         }
 
