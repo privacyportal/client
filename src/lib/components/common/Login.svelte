@@ -349,7 +349,7 @@
               {/if}
               <span class="xs"><a on:click={toggleAccountRecovery} href>Back to Sign In</a></span>
             {:else}
-              <Button height={isOAuth ? "45px" : "35px"} on:click={handleSignIn} disabled={loading} rounded strong border={$isDarkMode}>
+              <Button height={isOAuth ? '45px' : '35px'} on:click={handleSignIn} disabled={loading} rounded strong border={$isDarkMode}>
                 <FlexContainer column>
                   <span>Sign In</span>
                   {#if isOAuth}

@@ -5,16 +5,17 @@ import { keys } from '@libp2p/crypto';
 import { identify } from '@libp2p/identify';
 import { FaultTolerance } from '@libp2p/interface-transport';
 import { createEd25519PeerId } from '@libp2p/peer-id-factory';
+import { ping } from '@libp2p/ping';
 import { webRTC } from '@libp2p/webrtc';
 import { webSockets } from '@libp2p/websockets';
-import { ping } from '@libp2p/ping';
+import { CODE_DNS4, CODE_P2P, CODE_WEBRTC } from '@multiformats/multiaddr';
 import { createLibp2p } from 'libp2p';
 import { bufferToBase64, stringToBase64 } from '../auth';
 import { ORIGIN_DOMAIN, TURN_SERVERS } from '../constants';
-import { CODE_WEBRTC, CODE_P2P, CODE_DNS4 } from '@multiformats/multiaddr';
 
 // match the webrtc data channel message size and account for overhead
 export const MAX_MESSAGE_SIZE = 16 * 1024 - 256;
+export const CMD_TIMEOUT = 30000;
 
 const PING_PROTOCOL_PREFIX = 'pportal';
 const RELAY_ADDRESS_REGEX = new RegExp(`^p2p-relay-[0-9]+.${ORIGIN_DOMAIN}$`);
@@ -51,7 +52,7 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
     addresses: {
       announceFilter: (addrs) => {
         // only webrtc
-        return addrs.filter((addr) => addr.protoNames().includes('webrtc'));
+        return addrs.filter((addr) => addr.getComponents().some(({ code }) => code === CODE_WEBRTC));
       },
       listen: [
         // Listen for webRTC connections including over Circuit Relay connections
@@ -78,7 +79,13 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
           bufferedAmountLowEventTimeout: 60000,
 
           // Wait for `bufferedAmount` to become 0 before closing the underlying RTCDataChannel
-          drainTimeout: 60000
+          drainTimeout: 60000,
+
+          // close timeout
+          closeTimeout: 20000,
+
+          // wait for FIN acknowlegement message
+          finAckTimeout: 20000
         }
       }),
       // support dialing/listening on Circuit Relay addresses
@@ -95,7 +102,7 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
       yamux({
         // keep alive
         enableKeepAlive: true,
-        keepAliveInterval: 5000,
+        keepAliveInterval: 15000,
 
         // The total number of inbound protocol streams that can be opened on a given connection
         // This field is optional, the default value is shown
@@ -110,7 +117,7 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
 
         streamOptions: {
           // Used to control the maximum window size that we allow for a stream.
-          maxStreamWindowSize: 64 * MAX_MESSAGE_SIZE,
+          maxStreamWindowSize: 64 * MAX_MESSAGE_SIZE
         }
       })
     ],
@@ -201,6 +208,8 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
       identify: identify(),
       ping: ping({
         timeout: 30000,
+        maxInboundStreams: 5,
+        maxOutboundStreams: 5,
         protocolPrefix: PING_PROTOCOL_PREFIX
       })
     },
@@ -208,7 +217,7 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
       dialTimeout: 60000,
 
       // The total number of connections allowed to be open at one time
-      maxConnections: 3,
+      maxConnections: 5,
 
       // How many connections can be open but not yet upgraded
       maxIncomingPendingConnections: 5
@@ -216,8 +225,9 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
     connectionMonitor: {
       enabled: true,
       abortConnectionOnPingFailure: true,
+      pingInterval: 15000,
       pingTimeout: {
-        initialValue: 10000
+        initialValue: 30000
       },
       protocolPrefix: PING_PROTOCOL_PREFIX
     }
@@ -229,7 +239,13 @@ export async function startLibp2pNode({ peerId, session, isSender }) {
 export async function closeConnections(node, options) {
   const { abort } = { ...options };
   return await Promise.race([
-    Promise.all(node.getConnections().map((conn) => (abort ? conn.abort() : conn.close()))),
+    Promise.all(
+      node.getConnections().map((conn) => {
+        if (!abort) return conn.close();
+        const abortError = abort instanceof Error ? abort : new Error(String(abort));
+        return conn.abort(abortError);
+      })
+    ),
     new Promise((_, reject) => setTimeout(() => reject(new Error('closing connections timeout')), 5000))
   ]).catch((err) => {
     console.error('failed to close connections', err);
