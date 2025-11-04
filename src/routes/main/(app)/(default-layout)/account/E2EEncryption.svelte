@@ -280,7 +280,11 @@
 
 <FlexContainer column padding="1rem" bgColor="var(--new-layer-color)" gap="0.5rem" rounded>
   <h4 class="no-margin">End-to-End Encryption</h4>
-  <span class="sm">{isE2eeRequiredPage ? 'This feature requires end-to-end encryption to be enabled.' : 'Your data is encrypted on your device with zero-knowledge encryption, meaning we never have access to it.'}</span>
+  <span class="sm"
+    >{isE2eeRequiredPage
+      ? 'This feature requires end-to-end encryption to be enabled.'
+      : 'Your data is encrypted on your device with zero-knowledge encryption, meaning we never have access to it.'}</span
+  >
 
   <FlexContainer column gap="1rem">
     {#if !$session.e2ee}

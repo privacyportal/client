@@ -19,8 +19,7 @@
   import WarningIcon from '$lib/components/materialIcons/WarningIcon.svelte';
   import { createCompressionStream } from '$lib/modules/compression/compressionUtils';
   import { ORIGIN_DOMAIN } from '$lib/modules/constants';
-  import { createFixedSizeMessageTransform } from '$lib/modules/p2p/streamsUtil';
-  import { byteStream } from 'it-byte-stream';
+  import { createFixedSizeMessageTransform, toWritableStream, toReadableStream, readMessageFromWebrtcStream } from '$lib/modules/p2p/streamsUtil';
   import { decodeStartByteIndex, START_BYTE_INDEX_SIZE } from '$lib/modules/p2p/fileTransferProtocol';
 
   const SENDING_STEPS = [
@@ -101,12 +100,11 @@
 
       node.handle(
         ['/file-transfer/1.0.0', '/file-transfer-continue/1.0.0'],
-        async ({ connection, stream }) => {
+        async (stream, connection) => {
           try {
             let startByteIndex = 0;
             if (stream.protocol.includes('continue')) {
-              // read the start byte index
-              const startByteIndexBuffer = await byteStream(stream).read(START_BYTE_INDEX_SIZE);
+              const startByteIndexBuffer = await readMessageFromWebrtcStream(stream, START_BYTE_INDEX_SIZE);
               startByteIndex = decodeStartByteIndex(startByteIndexBuffer.subarray());
             }
 
@@ -114,7 +112,8 @@
             // compress then transfer
             const compressionStream = await createCompressionStream();
             const fixedSizeMessageTransform = createFixedSizeMessageTransform(MAX_MESSAGE_SIZE, { startByteIndex });
-            await stream.sink(file.stream().pipeThrough(compressionStream).pipeThrough(fixedSizeMessageTransform));
+
+            await file.stream().pipeThrough(compressionStream).pipeThrough(fixedSizeMessageTransform).pipeTo(toWritableStream(stream));
             transfersCompleted++;
           } catch (err) {
             console.error(err);

@@ -99,7 +99,7 @@
       <h1 class="no-margin">File Sharing</h1>
     </FlexContainer>
     <FlexContainer column align_items="center" justify_content="center" bgColor="var(--new-layer-color)" gap="0px" rounded>
-      <GridContainer align_items="center" template_columns="40% 1fr" gap="0px">
+      <GridContainer align_items="center" template_columns="40% 1fr" gap="0.5rem">
         {#if inviteURL}
           <div>
             <QrCode bind:value={inviteURL} />

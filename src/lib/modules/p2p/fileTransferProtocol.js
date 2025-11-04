@@ -1,10 +1,9 @@
 import { CONNECTION_STATUS } from '$lib/stores/pdfPreview';
-import { byteStream } from 'it-byte-stream';
 import { createDecompressionStream } from '../compression/compressionUtils';
 import { createFile } from '../export';
 import { decodeData, encodeData } from './libp2pUtil';
+import { toReadableStream, writeChunkToWebrtcStream } from './streamsUtil';
 
-const CMD_TIMEOUT = 30000;
 export const START_BYTE_INDEX_SIZE = 30;
 
 export function encodeStartByteIndex(startByteIndex) {
@@ -22,7 +21,7 @@ export async function handleFileTransferProtocol({ node, peerAddress, expectedSi
       const data = [];
       let bytesReceived = 0;
       let size = 0;
-      let retries = 10;
+      let retries = 50;
 
       const decompressionStream = await createDecompressionStream();
 
@@ -36,15 +35,12 @@ export async function handleFileTransferProtocol({ node, peerAddress, expectedSi
               connectionStatus.set(CONNECTION_STATUS[2]);
 
               if (bytesReceived) {
-                const signal = AbortSignal.timeout(CMD_TIMEOUT);
-                signal.addEventListener('abort', () => {
-                  stream?.abort(new Error('command timeout'));
-                });
                 // send the starting byte
-                await byteStream(stream).write(encodeStartByteIndex(bytesReceived), { signal });
+                await writeChunkToWebrtcStream(stream, encodeStartByteIndex(bytesReceived));
               }
 
-              for await (const chunk of stream.source) {
+              const readableStream = toReadableStream(stream);
+              for await (const chunk of readableStream) {
                 const bytes = chunk.subarray();
                 controller.enqueue(bytes);
                 bytesReceived += bytes.byteLength;
