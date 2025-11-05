@@ -16,7 +16,8 @@ const CONFIG = {
   },
   '/oauth/authorize': {
     isPublicPage: false,
-    noHeader: true
+    noHeader: true,
+    isE2EEBypassedPage: true
   },
   '/unsubscribe': {
     isPublicPage: true,
