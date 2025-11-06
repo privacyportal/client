@@ -164,7 +164,7 @@
           {#if $session?.e2ee}
             <FlexContainer column gap="0.15rem">
               <GridContainer align_items="center" template_columns={$session.e2ee === 2 ? '1fr auto auto' : '1fr'} gap="0.5rem">
-                <Input type="password" required={false} disabled={submittingEncryptionSettings} bind:value={_old_password} />
+                <Input type="password" required={false} disabled={submittingEncryptionSettings} bind:value={_old_password} wide />
                 {#if $session.e2ee === 2}
                   <span class="xs">or</span>
                   <Button type="submit" name="passkey" padding="0px 0.2rem" disabled={submittingEncryptionSettings || _password !== _retyped_password} blendin rounded border>

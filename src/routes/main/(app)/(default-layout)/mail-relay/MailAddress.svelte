@@ -357,7 +357,7 @@
               <Button type="submit" disabled={loading} primary="true" rounded>Save</Button>
             {/if}
             <GridContainer template_columns="18px auto" align_items="center" margin="0.3rem 0 0 0" gap="0.1rem">
-              {#if ct}
+              {#if ct || (!editMode && $session?.e2ee)}
                 <LockIcon color="var(--positive-color)" dimension="14px" />
                 <span class="note">The label and note are end-to-end encrypted.</span>
               {:else}
