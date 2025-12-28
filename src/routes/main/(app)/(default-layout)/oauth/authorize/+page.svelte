@@ -13,6 +13,7 @@
 
   // support hash params to prevent unwanted leaks to server
   const searchParams = $page.url.hash?.length ? new URLSearchParams($page.url?.hash.substring(1)) : $page.url.searchParams;
+  let loading = searchParams.has('loading'); // used to initialize popups
   let responseType = searchParams.get('response_type');
   let clientId = searchParams.get('client_id');
   let scope = searchParams.get('scope');
@@ -30,8 +31,8 @@
   let errorMessage;
 
   $: consent_scope = new_scope || scope;
-  $: hasBasicPermissions = consent_scope.includes('name') || consent_scope.includes('email') || authorized_data?.name || authorized_data?.email;
-  $: hasExtraPermissions = consent_scope.includes('w:api_keys');
+  $: hasBasicPermissions = consent_scope?.includes('name') || consent_scope?.includes('email') || authorized_data?.name || authorized_data?.email;
+  $: hasExtraPermissions = consent_scope?.includes('w:api_keys');
 
   let name = 'Anonymous';
   let submitting = false;
@@ -206,7 +207,7 @@
       </Form>
     </FlexContainer>
   </FlexContainer>
-{:else if !clientId || !scope}
+{:else if !loading && (!clientId || !scope)}
   <FlexContainer padding="20% 0" column align_items="center" textCentered>
     <Logo dimension="15%" color="#b08d00" opacity="1" />
     <h2>OAUTH Error</h2>
